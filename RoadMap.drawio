@@ -1,0 +1,66 @@
+<mxfile host="app.diagrams.net" modified="2024-06-19T10:01:46.408Z" agent="Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0" etag="V5e2AY-jMk6hixHqbqg4" version="24.5.5" type="github">
+  <diagram name="Page-1" id="xb2kVywM_EFOqOwRa0yg">
+    <mxGraphModel dx="1615" dy="1486" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="2" value="Testing Analysis" style="whiteSpace=wrap;strokeWidth=2;verticalAlign=top;" parent="1" vertex="1">
+          <mxGeometry x="-796" y="-530" width="420" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="8" value="3. Front-end Changes" style="whiteSpace=wrap;strokeWidth=2;verticalAlign=top;" parent="1" vertex="1">
+          <mxGeometry x="-778" y="790" width="384" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="12" value="2. Back-end Changes" style="whiteSpace=wrap;strokeWidth=2;verticalAlign=top;" parent="1" vertex="1">
+          <mxGeometry x="-725" y="1550" width="358" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="13" value="Update Spring Boot application" style="ellipse;aspect=fixed;strokeWidth=2;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="-630" y="1670" width="236" height="236" as="geometry" />
+        </mxCell>
+        <mxCell id="15" value="" style="curved=1;startArrow=none;endArrow=block;exitX=0.37;exitY=-6.35;entryX=0.39;entryY=-6.02;" parent="1" source="13" target="14" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="14" value="Handle CRUD operations for pet types" style="ellipse;aspect=fixed;strokeWidth=2;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="-650" y="1980" width="288" height="288" as="geometry" />
+        </mxCell>
+        <mxCell id="10" value="Allow users to view and manage pet types" style="ellipse;aspect=fixed;strokeWidth=2;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="-720" y="1096" width="314" height="314" as="geometry" />
+        </mxCell>
+        <mxCell id="9" value="Add UI components" style="ellipse;aspect=fixed;strokeWidth=2;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="-641" y="890" width="156" height="156" as="geometry" />
+        </mxCell>
+        <mxCell id="11" value="" style="curved=1;startArrow=none;endArrow=block;exitX=0.38;exitY=-6.14;entryX=0.44;entryY=-3.55;" parent="1" source="9" target="10" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="4" value="Ensure application&#39;s reliability and performance" style="ellipse;aspect=fixed;strokeWidth=2;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="-740" y="-133" width="350" height="350" as="geometry" />
+        </mxCell>
+        <mxCell id="3" value="Automated testing implementation" style="ellipse;aspect=fixed;strokeWidth=2;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="-694" y="-440" width="257" height="257" as="geometry" />
+        </mxCell>
+        <mxCell id="5" value="Unit Tests: Testing individual components" style="ellipse;aspect=fixed;strokeWidth=2;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="-719" y="267" width="308" height="308" as="geometry" />
+        </mxCell>
+        <mxCell id="6" value="" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" parent="1" source="3" target="4" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7" value="" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" parent="1" source="4" target="5" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="bSLgVkp5ueUEIGGs7vRg-16" value="Development (Java)" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-799" y="-1079" width="299" height="259" as="geometry" />
+        </mxCell>
+        <mxCell id="bSLgVkp5ueUEIGGs7vRg-21" value="&lt;div class=&quot;t pg-7m0 pg-7x2 pg-7h3 pg-7y10 pg-7ff2 pg-7fs1 pg-7fc0 pg-7sc1 pg-7ls0 pg-7ws0&quot;&gt;&lt;b&gt;New Feature: Type of Pet&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div align=&quot;left&quot;&gt;- Familiarize yourself with the repository&lt;/div&gt;&lt;div align=&quot;left&quot;&gt;- Prepare and launch the PetClinic app&lt;/div&gt;&lt;div align=&quot;left&quot;&gt;- Observe and asses where the type of pet feature should be placed&lt;/div&gt;&lt;div align=&quot;left&quot;&gt;- find in the source code whre the other similar feature are located and add the new feature following the same approach &lt;br&gt;&lt;/div&gt;&lt;div align=&quot;left&quot;&gt;- adjust any other elements that might cause conflicts with teh new change&lt;/div&gt;&lt;div align=&quot;left&quot;&gt;- create tests and fix anyissues found&lt;br&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="bSLgVkp5ueUEIGGs7vRg-16">
+          <mxGeometry x="9" y="29" width="281" height="191" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
