@@ -45,6 +45,7 @@ public class ClinicServiceImpl implements ClinicService {
     private final VisitRepository visitRepository;
     private final SpecialtyRepository specialtyRepository;
     private final PetTypeRepository petTypeRepository;
+    private final BreedRepository breedRepository;
 
     @Autowired
     public ClinicServiceImpl(
@@ -53,13 +54,15 @@ public class ClinicServiceImpl implements ClinicService {
         OwnerRepository ownerRepository,
         VisitRepository visitRepository,
         SpecialtyRepository specialtyRepository,
-        PetTypeRepository petTypeRepository) {
+        PetTypeRepository petTypeRepository,
+        BreedRepository breedRepository) {
         this.petRepository = petRepository;
         this.vetRepository = vetRepository;
         this.ownerRepository = ownerRepository;
         this.visitRepository = visitRepository;
         this.specialtyRepository = specialtyRepository;
         this.petTypeRepository = petTypeRepository;
+        this.breedRepository = breedRepository;
     }
 
     @Override
@@ -154,6 +157,30 @@ public class ClinicServiceImpl implements ClinicService {
 
     @Override
     @Transactional(readOnly = true)
+    public Breed findBreedById(int breedId) {
+        return findEntityById(() -> breedRepository.findById(breedId));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Collection<Breed> findAllBreeds() throws DataAccessException {
+        return breedRepository.findAll();
+    }
+
+    @Override
+    @Transactional
+    public void saveBreed(Breed breed) throws DataAccessException {
+        breedRepository.save(breed);
+    }
+
+    @Override
+    @Transactional
+    public void deleteBreed(Breed breed) throws DataAccessException {
+        breedRepository.delete(breed);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Specialty findSpecialtyById(int specialtyId) {
         return findEntityById(() -> specialtyRepository.findById(specialtyId));
     }
@@ -180,6 +207,12 @@ public class ClinicServiceImpl implements ClinicService {
     @Transactional(readOnly = true)
     public Collection<PetType> findPetTypes() throws DataAccessException {
         return petRepository.findPetTypes();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Collection<Breed> findBreeds() throws DataAccessException {
+        return petRepository.findBreeds();
     }
 
     @Override

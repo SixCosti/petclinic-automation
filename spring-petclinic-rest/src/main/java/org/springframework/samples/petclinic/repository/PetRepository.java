@@ -22,6 +22,8 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.samples.petclinic.model.BaseEntity;
 import org.springframework.samples.petclinic.model.Pet;
 import org.springframework.samples.petclinic.model.PetType;
+import org.springframework.samples.petclinic.model.Breed;
+
 
 /**
  * Repository class for <code>Pet</code> domain objects All method names are compliant with Spring Data naming
@@ -41,6 +43,9 @@ public interface PetRepository {
      * @return a <code>Collection</code> of <code>PetType</code>s
      */
     List<PetType> findPetTypes() throws DataAccessException;
+
+    List<Breed> findBreeds() throws DataAccessException;
+
 
     /**
      * Retrieve a <code>Pet</code> from the data store by id.

@@ -35,6 +35,7 @@ import org.springframework.orm.ObjectRetrievalFailureException;
 import org.springframework.samples.petclinic.model.Owner;
 import org.springframework.samples.petclinic.model.Pet;
 import org.springframework.samples.petclinic.model.PetType;
+import org.springframework.samples.petclinic.model.Breed;
 import org.springframework.samples.petclinic.model.Visit;
 import org.springframework.samples.petclinic.repository.OwnerRepository;
 import org.springframework.samples.petclinic.repository.PetRepository;
@@ -88,6 +89,15 @@ public class JdbcPetRepositoryImpl implements PetRepository {
     }
 
     @Override
+    public List<Breed> findBreeds() throws DataAccessException {
+        Map<String, Object> params = new HashMap<>();
+        return this.namedParameterJdbcTemplate.query(
+            "SELECT id, name FROM types ORDER BY name",
+            params,
+            BeanPropertyRowMapper.newInstance(Breed.class));
+    }
+
+    @Override
     public Pet findById(int id) throws DataAccessException {
         Integer ownerId;
         try {
@@ -109,7 +119,7 @@ public class JdbcPetRepositoryImpl implements PetRepository {
             pet.setId(newKey.intValue());
         } else {
             this.namedParameterJdbcTemplate.update(
-                "UPDATE pets SET name=:name, birth_date=:birth_date, type_id=:type_id, " +
+                "UPDATE pets SET name=:name, birth_date=:birth_date, type_id=:type_id, breed_id=:breed_id, " +
                     "owner_id=:owner_id WHERE id=:id",
                 createPetParameterSource(pet));
         }
@@ -124,6 +134,7 @@ public class JdbcPetRepositoryImpl implements PetRepository {
             .addValue("name", pet.getName())
             .addValue("birth_date", pet.getBirthDate())
             .addValue("type_id", pet.getType().getId())
+            .addValue("breed_id", pet.getBreed().getId())
             .addValue("owner_id", pet.getOwner().getId());
     }
     
@@ -133,18 +144,22 @@ public class JdbcPetRepositoryImpl implements PetRepository {
 		Collection<Pet> pets = new ArrayList<Pet>();
 		Collection<JdbcPet> jdbcPets = new ArrayList<JdbcPet>();
 		jdbcPets = this.namedParameterJdbcTemplate
-				.query("SELECT pets.id as pets_id, name, birth_date, type_id, owner_id FROM pets",
+				.query("SELECT pets.id as pets_id, name, birth_date, type_id, breed_id, owner_id FROM pets",
 				params,
 				new JdbcPetRowMapper());
 		Collection<PetType> petTypes = this.namedParameterJdbcTemplate.query("SELECT id, name FROM types ORDER BY name",
 				new HashMap<String,
 				Object>(), BeanPropertyRowMapper.newInstance(PetType.class));
+        Collection<Breed> breeds = this.namedParameterJdbcTemplate.query("SELECT id, name FROM breeds ORDER BY name",
+				new HashMap<String,
+				Object>(), BeanPropertyRowMapper.newInstance(Breed.class));
 		Collection<Owner> owners = this.namedParameterJdbcTemplate.query(
 				"SELECT id, first_name, last_name, address, city, telephone FROM owners ORDER BY last_name",
 				new HashMap<String, Object>(),
 				BeanPropertyRowMapper.newInstance(Owner.class));
 		for (JdbcPet jdbcPet : jdbcPets) {
 			jdbcPet.setType(EntityUtils.getById(petTypes, PetType.class, jdbcPet.getTypeId()));
+            jdbcPet.setBreed(EntityUtils.getById(breeds, Breed.class, jdbcPet.getBreedId()));
 			jdbcPet.setOwner(EntityUtils.getById(owners, Owner.class, jdbcPet.getOwnerId()));
 			// TODO add visits
 			pets.add(jdbcPet);

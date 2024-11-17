@@ -7,6 +7,8 @@ DROP TABLE types IF EXISTS;
 DROP TABLE owners IF EXISTS;
 DROP TABLE roles IF EXISTS;
 DROP TABLE users IF EXISTS;
+DROP TABLE breeds IF EXISTS;
+
 
 
 CREATE TABLE vets (
@@ -35,6 +37,12 @@ CREATE TABLE types (
 );
 CREATE INDEX types_name ON types (name);
 
+CREATE TABLE breeds (
+  id   INTEGER IDENTITY PRIMARY KEY,
+  name VARCHAR(80)
+);
+CREATE INDEX breeds_name ON breeds (name);
+
 CREATE TABLE owners (
   id         INTEGER IDENTITY PRIMARY KEY,
   first_name VARCHAR(30),
@@ -50,10 +58,12 @@ CREATE TABLE pets (
   name       VARCHAR(30),
   birth_date DATE,
   type_id    INTEGER NOT NULL,
+  breed_id   INTEGER NOT NULL,
   owner_id   INTEGER NOT NULL
 );
 ALTER TABLE pets ADD CONSTRAINT fk_pets_owners FOREIGN KEY (owner_id) REFERENCES owners (id);
 ALTER TABLE pets ADD CONSTRAINT fk_pets_types FOREIGN KEY (type_id) REFERENCES types (id);
+ALTER TABLE pets ADD CONSTRAINT fk_pets_breeds FOREIGN KEY (breed_id) REFERENCES breeds (id);
 CREATE INDEX pets_name ON pets (name);
 
 CREATE TABLE visits (

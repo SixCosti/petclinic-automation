@@ -25,6 +25,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.dao.DataAccessException;
 import org.springframework.samples.petclinic.model.Pet;
 import org.springframework.samples.petclinic.model.PetType;
+import org.springframework.samples.petclinic.model.Breed;
 import org.springframework.samples.petclinic.repository.PetRepository;
 import org.springframework.stereotype.Repository;
 
@@ -48,6 +49,12 @@ public class JpaPetRepositoryImpl implements PetRepository {
     @SuppressWarnings("unchecked")
     public List<PetType> findPetTypes() {
         return this.em.createQuery("SELECT ptype FROM PetType ptype ORDER BY ptype.name").getResultList();
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Breed> findBreeds() {
+        return this.em.createQuery("SELECT pbreed FROM Breed pbreed ORDER BY pbreed.name").getResultList();
     }
 
     @Override

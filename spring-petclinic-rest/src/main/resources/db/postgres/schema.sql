@@ -41,6 +41,16 @@ CREATE INDEX IF NOT EXISTS idx_types_name ON types (name);
 
 ALTER SEQUENCE types_id_seq RESTART WITH 100;
 
+CREATE TABLE IF NOT EXISTS breeds (
+  id SERIAL,
+  name VARCHAR(80),
+  CONSTRAINT pk_breeds PRIMARY KEY (id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_breeds_name ON breeds (name);
+
+ALTER SEQUENCE breeds_id_seq RESTART WITH 100;
+
 CREATE TABLE IF NOT EXISTS owners (
   id SERIAL,
   first_name VARCHAR(30),
@@ -61,9 +71,11 @@ CREATE TABLE IF NOT EXISTS pets (
   name VARCHAR(30),
   birth_date DATE,
   type_id INT NOT NULL,
+  breed_id INT NOT NULL,
   owner_id INT NOT NULL,
   FOREIGN KEY (owner_id) REFERENCES owners(id),
   FOREIGN KEY (type_id) REFERENCES types(id),
+  FOREIGN KEY (breed_id) REFERENCES breed(id),
   CONSTRAINT pk_pets PRIMARY KEY (id)
 );
 

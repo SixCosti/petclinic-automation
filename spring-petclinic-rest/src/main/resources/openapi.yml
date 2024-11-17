@@ -23,6 +23,8 @@ tags:
     description: Endpoints related to vet visits.
   - name: pettypes
     description: Endpoints related to pet types.
+  - name: breeds
+    description: Endpoints related to breeds.
   - name: specialty
     description: Endpoints related to vet specialties.
 paths:
@@ -738,6 +740,258 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PetType'
+        304:
+          description: Not modified.
+          headers:
+            ETag:
+              description: An ID for this version of the response.
+              schema:
+                type: string
+        400:
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestError'
+        404:
+          description: Pet type not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestError'
+        500:
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestError'
+
+  /breeds:
+    get:
+      tags:
+        - breeds
+      operationId: listBreeds
+      summary: Lists breeds
+      description: Returns an array of breeds.
+      responses:
+        200:
+          description: Breeds found and returned.
+          headers:
+            ETag:
+              description: An ID for this version of the response.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Breed'
+        304:
+          description: Not modified.
+          headers:
+            ETag:
+              description: An ID for this version of the response.
+              schema:
+                type: string
+        500:
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestError'
+    post:
+      tags:
+        - breeds
+      operationId: addBreed
+      summary: Create a breed
+      description: Creates a breed .
+      requestBody:
+        description: The breed
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BreedFields'
+        required: true
+      responses:
+        200:
+          description: Breed created successfully.
+          headers:
+            ETag:
+              description: An ID for this version of the response.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Breed'
+        304:
+          description: Not modified.
+          headers:
+            ETag:
+              description: An ID for this version of the response.
+              schema:
+                type: string
+        400:
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestError'
+        404:
+          description: Breed not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestError'
+        500:
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestError'
+  /breeds/{breedId}:
+    get:
+      tags:
+        - breeds
+      operationId: getBreed
+      summary: Get a breed by ID
+      description: Returns the breed or a 404 error.
+      parameters:
+        - name: breedId
+          in: path
+          description: The ID of the breed.
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            example: 1
+      responses:
+        200:
+          description: Breed details found and returned.
+          headers:
+            ETag:
+              description: An ID for this version of the response.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Breed'
+        304:
+          description: Not modified.
+          headers:
+            ETag:
+              description: An ID for this version of the response.
+              schema:
+                type: string
+        400:
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestError'
+        404:
+          description: Breed not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestError'
+        500:
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestError'
+    put:
+      tags:
+        - breeds
+      operationId: updateBreed
+      summary: Update a breed by ID
+      description: Returns the breed or a 404 error.
+      parameters:
+        - name: breedId
+          in: path
+          description: The ID of the breed.
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            example: 1
+      requestBody:
+        description: The breed
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Breed'
+        required: true
+      responses:
+        200:
+          description: Breed details found and returned.
+          headers:
+            ETag:
+              description: An ID for this version of the response.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Breed'
+        304:
+          description: Not modified.
+          headers:
+            ETag:
+              description: An ID for this version of the response.
+              schema:
+                type: string
+        400:
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestError'
+        404:
+          description: Breed not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestError'
+        500:
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestError'
+    delete:
+      tags:
+        - breeds
+      operationId: deleteBreed
+      summary: Delete a breed by ID
+      description: Returns the breed or a 404 error.
+      parameters:
+        - name: breedId
+          in: path
+          description: The ID of the breed.
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            example: 1
+      responses:
+        200:
+          description: Breed details found and returned.
+          headers:
+            ETag:
+              description: An ID for this version of the response.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Breed'
         304:
           description: Not modified.
           headers:
@@ -2008,10 +2262,13 @@ components:
           example: '2010-09-07'
         type:
           $ref: '#/components/schemas/PetType'
+        breed:
+          $ref: '#/components/schemas/Breed'
       required:
         - name
         - birthDate
         - type
+        - breed
     Pet:
       title: Pet
       description: A pet.
@@ -2045,6 +2302,7 @@ components:
           required:
             - id
             - type
+            - breed
             - visits
     VetFields:
       title: VetFields
@@ -2166,6 +2424,36 @@ components:
             id:
               title: ID
               description: The ID of the pet type.
+              type: integer
+              format: int32
+              minimum: 0
+              example: 1
+          required:
+            - id
+    BreedFields:
+      title: Breed fields
+      description: Editable fields of a breed.
+      type: object
+      properties:
+        name:
+          title: Name
+          description: The name of the breed.
+          type: string
+          maxLength: 80
+          minLength: 1
+          example: siamese
+      required:
+        - name
+    Breed:
+      title: Breed
+      description: A breed.
+      allOf:
+        - $ref: '#/components/schemas/BreedFields'
+        - type: object
+          properties:
+            id:
+              title: ID
+              description: The ID of the breed.
               type: integer
               format: int32
               minimum: 0

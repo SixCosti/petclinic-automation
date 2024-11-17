@@ -33,7 +33,15 @@ public class JdbcPet extends Pet {
         return this.typeId;
     }
 
+    public int getBreedId() {
+        return this.typeId;
+    }
+
     public void setTypeId(int typeId) {
+        this.typeId = typeId;
+    }
+
+    public void setBreedId(int typeId) {
         this.typeId = typeId;
     }
 

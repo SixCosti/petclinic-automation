@@ -5,8 +5,10 @@ import org.mapstruct.Mapping;
 import org.springframework.samples.petclinic.rest.dto.PetDto;
 import org.springframework.samples.petclinic.rest.dto.PetFieldsDto;
 import org.springframework.samples.petclinic.rest.dto.PetTypeDto;
+import org.springframework.samples.petclinic.rest.dto.BreedDto;
 import org.springframework.samples.petclinic.model.Pet;
 import org.springframework.samples.petclinic.model.PetType;
+import org.springframework.samples.petclinic.model.Breed;
 
 import java.util.Collection;
 
@@ -33,4 +35,11 @@ public interface PetMapper {
     PetType toPetType(PetTypeDto petTypeDto);
 
     Collection<PetTypeDto> toPetTypeDtos(Collection<PetType> petTypes);
+
+    BreedDto toBreedDto(Breed breed);
+
+    Breed toBreed(BreedDto breedDto);
+
+    Collection<BreedDto> toBreedDtos(Collection<Breed> breed);
 }
+
