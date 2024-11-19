@@ -33,6 +33,7 @@ import org.springframework.samples.petclinic.rest.advice.ExceptionControllerAdvi
 import org.springframework.samples.petclinic.rest.dto.OwnerDto;
 import org.springframework.samples.petclinic.rest.dto.PetDto;
 import org.springframework.samples.petclinic.rest.dto.PetTypeDto;
+import org.springframework.samples.petclinic.rest.dto.BreedDto;
 import org.springframework.samples.petclinic.rest.dto.VisitDto;
 import org.springframework.samples.petclinic.service.ClinicService;
 import org.springframework.samples.petclinic.service.clinicService.ApplicationTestConfig;
@@ -106,18 +107,24 @@ class OwnerRestControllerTests {
         petType.id(2)
             .name("dog");
 
+        BreedDto breed = new BreedDto();
+        breed.id(2)
+            .name("moe");
+
         pets = new ArrayList<>();
         PetDto pet = new PetDto();
         pets.add(pet.id(3)
             .name("Rosy")
             .birthDate(LocalDate.now())
-            .type(petType));
+            .type(petType)
+            .breed(breed));
 
         pet = new PetDto();
         pets.add(pet.id(4)
             .name("Jewel")
             .birthDate(LocalDate.now())
-            .type(petType));
+            .type(petType)
+            .breed(breed));
 
         visits = new ArrayList<>();
         VisitDto visit = new VisitDto();
@@ -137,8 +144,9 @@ class OwnerRestControllerTests {
 
     private PetDto getTestPetWithIdAndName(final OwnerDto owner, final int id, final String name) {
         PetTypeDto petType = new PetTypeDto();
+        BreedDto breed = new BreedDto();
         PetDto pet = new PetDto();
-        pet.id(id).name(name).birthDate(LocalDate.now()).type(petType.id(2).name("dog")).addVisitsItem(getTestVisitForPet(pet, 1));
+        pet.id(id).name(name).birthDate(LocalDate.now()).type(petType.id(2).name("dog")).breed(breed.id(2).name("moe")).addVisitsItem(getTestVisitForPet(pet, 1));
         return pet;
     }
 

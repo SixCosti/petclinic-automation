@@ -29,6 +29,7 @@ import org.springframework.samples.petclinic.mapper.VisitMapper;
 import org.springframework.samples.petclinic.model.Owner;
 import org.springframework.samples.petclinic.model.Pet;
 import org.springframework.samples.petclinic.model.PetType;
+import org.springframework.samples.petclinic.model.Breed;
 import org.springframework.samples.petclinic.model.Visit;
 import org.springframework.samples.petclinic.rest.advice.ExceptionControllerAdvice;
 import org.springframework.samples.petclinic.service.ClinicService;
@@ -90,12 +91,18 @@ class VisitRestControllerTests {
     	petType.setId(2);
     	petType.setName("dog");
 
+        Breed breed = new Breed();
+    	breed.setId(2);
+    	breed.setName("moe");
+
     	Pet pet = new Pet();
     	pet.setId(8);
     	pet.setName("Rosy");
         pet.setBirthDate(LocalDate.now());
     	pet.setOwner(owner);
     	pet.setType(petType);
+        pet.setBreed(breed);
+
 
 
     	Visit visit = new Visit();

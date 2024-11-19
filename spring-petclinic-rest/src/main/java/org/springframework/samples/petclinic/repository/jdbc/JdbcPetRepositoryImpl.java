@@ -92,7 +92,7 @@ public class JdbcPetRepositoryImpl implements PetRepository {
     public List<Breed> findBreeds() throws DataAccessException {
         Map<String, Object> params = new HashMap<>();
         return this.namedParameterJdbcTemplate.query(
-            "SELECT id, name FROM types ORDER BY name",
+            "SELECT id, name FROM breeds ORDER BY name",
             params,
             BeanPropertyRowMapper.newInstance(Breed.class));
     }

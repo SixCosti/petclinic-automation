@@ -72,6 +72,8 @@ abstract class AbstractClinicServiceTests {
         assertThat(owner.getPets().size()).isEqualTo(1);
         assertThat(owner.getPets().get(0).getType()).isNotNull();
         assertThat(owner.getPets().get(0).getType().getName()).isEqualTo("cat");
+        assertThat(owner.getPets().get(0).getBreed()).isNotNull();
+        assertThat(owner.getPets().get(0).getBreed().getName()).isEqualTo("siamese");
     }
 
     @Test
@@ -126,6 +128,16 @@ abstract class AbstractClinicServiceTests {
 //        assertThat(petType4.getName()).isEqualTo("snake");
 //    }
 
+//    @Test
+//    void shouldFindAllBreeds() {
+//        Collection<Breed> breeds = this.clinicService.findBreeds();
+
+//        Breed breed1 = EntityUtils.getById(breeds, Breed.class, 1);
+//        assertThat(breed1.getName()).isEqualTo("siamese");
+//        Breed breed4 = EntityUtils.getById(breeds, Breed.class, 4);
+//        assertThat(breed4.getName()).isEqualTo("anaconda");
+//    }
+
     @Test
     @Transactional
     void shouldInsertPetIntoDatabaseAndGenerateId() {
@@ -136,6 +148,8 @@ abstract class AbstractClinicServiceTests {
         pet.setName("bowser");
         Collection<PetType> types = this.clinicService.findPetTypes();
         pet.setType(EntityUtils.getById(types, PetType.class, 2));
+        Collection<Breed> breeds = this.clinicService.findBreeds();
+        pet.setBreed(EntityUtils.getById(breeds, Breed.class, 2));
         pet.setBirthDate(LocalDate.now());
         owner6.addPet(pet);
         assertThat(owner6.getPets().size()).isEqualTo(found + 1);
@@ -409,6 +423,62 @@ abstract class AbstractClinicServiceTests {
 			petType = null;
 		}
         assertThat(petType).isNull();
+    }
+
+    @Test
+    void shouldFindBreedById(){
+    	Breed breed = this.clinicService.findBreedById(1);
+    	assertThat(breed.getName()).isEqualTo("siamese");
+    }
+
+    @Test
+    void shouldFindAllBreeds(){
+        Collection<Breed> breeds = this.clinicService.findAllBreeds();
+        Breed breed1 = EntityUtils.getById(breeds, Breed.class, 1);
+        assertThat(breed1.getName()).isEqualTo("siamese");
+        Breed breed3 = EntityUtils.getById(breeds, Breed.class, 3);
+        assertThat(breed3.getName()).isEqualTo("leopard");
+    }
+
+    @Test
+    @Transactional
+    void shouldInsertBreed() {
+        Collection<Breed> breeds = this.clinicService.findAllBreeds();
+        int found = breeds.size();
+
+        Breed breed = new Breed();
+        breed.setName("leopard");
+
+        this.clinicService.saveBreed(breed);
+        assertThat(breed.getId().longValue()).isNotEqualTo(0);
+
+        breeds = this.clinicService.findAllBreeds();
+        assertThat(breeds.size()).isEqualTo(found + 1);
+    }
+
+    @Test
+    @Transactional
+    void shouldUpdateBreed(){
+    	Breed breed = this.clinicService.findBreedById(1);
+    	String oldLastName = breed.getName();
+        String newLastName = oldLastName + "X";
+        breed.setName(newLastName);
+        this.clinicService.saveBreed(breed);
+        breed = this.clinicService.findBreedById(1);
+        assertThat(breed.getName()).isEqualTo(newLastName);
+    }
+
+    @Test
+    @Transactional
+    void shouldDeleteBreed(){
+    	Breed breed = this.clinicService.findBreedById(1);
+        this.clinicService.deleteBreed(breed);
+        try {
+        	breed = this.clinicService.findBreedById(1);
+		} catch (Exception e) {
+			breed = null;
+		}
+        assertThat(breed).isNull();
     }
 
     @Test

@@ -27,6 +27,7 @@ import org.springframework.orm.ObjectRetrievalFailureException;
 import org.springframework.samples.petclinic.model.Owner;
 import org.springframework.samples.petclinic.model.Pet;
 import org.springframework.samples.petclinic.model.PetType;
+import org.springframework.samples.petclinic.model.Breed;
 import org.springframework.samples.petclinic.model.Visit;
 import org.springframework.samples.petclinic.repository.OwnerRepository;
 import org.springframework.samples.petclinic.util.EntityUtils;
@@ -115,13 +116,18 @@ public class JdbcOwnerRepositoryImpl implements OwnerRepository {
         Map<String, Object> params = new HashMap<>();
         params.put("id", owner.getId());
         final List<JdbcPet> pets = this.namedParameterJdbcTemplate.query(
-            "SELECT pets.id as pets_id, name, birth_date, type_id, owner_id, visits.id as visit_id, visit_date, description, visits.pet_id as visits_pet_id FROM pets LEFT OUTER JOIN visits ON pets.id = visits.pet_id WHERE owner_id=:id ORDER BY pets.id",
+            "SELECT pets.id as pets_id, name, birth_date, type_id, breed_id, owner_id, visits.id as visit_id, visit_date, description, visits.pet_id as visits_pet_id FROM pets LEFT OUTER JOIN visits ON pets.id = visits.pet_id WHERE owner_id=:id ORDER BY pets.id",
             params,
             new JdbcPetVisitExtractor()
         );
         Collection<PetType> petTypes = getPetTypes();
         for (JdbcPet pet : pets) {
             pet.setType(EntityUtils.getById(petTypes, PetType.class, pet.getTypeId()));
+            owner.addPet(pet);
+        }
+        Collection<Breed> breeds = getBreeds();
+        for (JdbcPet pet : pets) {
+            pet.setBreed(EntityUtils.getById(breeds, Breed.class, pet.getBreedId()));
             owner.addPet(pet);
         }
     }
@@ -144,6 +150,12 @@ public class JdbcOwnerRepositoryImpl implements OwnerRepository {
         return this.namedParameterJdbcTemplate.query(
             "SELECT id, name FROM types ORDER BY name", new HashMap<String, Object>(),
             BeanPropertyRowMapper.newInstance(PetType.class));
+    }
+
+    public Collection<Breed> getBreeds() throws DataAccessException {
+        return this.namedParameterJdbcTemplate.query(
+            "SELECT id, name FROM breeds ORDER BY name", new HashMap<String, Object>(),
+            BeanPropertyRowMapper.newInstance(Breed.class));
     }
 
     /**

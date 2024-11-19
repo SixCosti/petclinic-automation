@@ -35,6 +35,7 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.orm.ObjectRetrievalFailureException;
 import org.springframework.samples.petclinic.model.Pet;
 import org.springframework.samples.petclinic.model.Breed;
+import org.springframework.samples.petclinic.model.PetType;
 import org.springframework.samples.petclinic.model.Visit;
 import org.springframework.samples.petclinic.repository.BreedRepository;
 import org.springframework.stereotype.Repository;
@@ -56,7 +57,7 @@ public class JdbcBreedRepositoryImpl implements BreedRepository {
 	public JdbcBreedRepositoryImpl(DataSource dataSource) {
 		this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
 		this.insertBreed = new SimpleJdbcInsert(dataSource)
-	            .withTableName("types")
+	            .withTableName("breeds")
 	            .usingGeneratedKeyColumns("id");
 	}
 
@@ -67,7 +68,7 @@ public class JdbcBreedRepositoryImpl implements BreedRepository {
             Map<String, Object> params = new HashMap<>();
             params.put("id", id);
             breed = this.namedParameterJdbcTemplate.queryForObject(
-                "SELECT id, name FROM types WHERE id= :id",
+                "SELECT id, name FROM breeds WHERE id= :id",
                 params,
                 BeanPropertyRowMapper.newInstance(Breed.class));
         } catch (EmptyResultDataAccessException ex) {
@@ -83,7 +84,7 @@ public class JdbcBreedRepositoryImpl implements BreedRepository {
             Map<String, Object> params = new HashMap<>();
             params.put("name", name);
             breed = this.namedParameterJdbcTemplate.queryForObject(
-                "SELECT id, name FROM types WHERE name= :name",
+                "SELECT id, name FROM breeds WHERE name= :name",
                 params,
                 BeanPropertyRowMapper.newInstance(Breed.class));
         } catch (EmptyResultDataAccessException ex) {
@@ -96,7 +97,7 @@ public class JdbcBreedRepositoryImpl implements BreedRepository {
 	public Collection<Breed> findAll() throws DataAccessException {
 		Map<String, Object> params = new HashMap<>();
         return this.namedParameterJdbcTemplate.query(
-            "SELECT id, name FROM types",
+            "SELECT id, name FROM breeds",
             params,
             BeanPropertyRowMapper.newInstance(Breed.class));
 	}
@@ -108,19 +109,19 @@ public class JdbcBreedRepositoryImpl implements BreedRepository {
             Number newKey = this.insertBreed.executeAndReturnKey(parameterSource);
             breed.setId(newKey.intValue());
         } else {
-            this.namedParameterJdbcTemplate.update("UPDATE types SET name=:name WHERE id=:id",
+            this.namedParameterJdbcTemplate.update("UPDATE breeds SET name=:name WHERE id=:id",
                 parameterSource);
         }
 	}
 
 	@Override
 	public void delete(Breed breed) throws DataAccessException {
-		Map<String, Object> pettype_params = new HashMap<>();
-		pettype_params.put("id", breed.getId());
+		Map<String, Object> breed_params = new HashMap<>();
+		breed_params.put("id", breed.getId());
 		List<Pet> pets = new ArrayList<Pet>();
 		pets = this.namedParameterJdbcTemplate.
-    			query("SELECT pets.id, name, birth_date, type_id, owner_id FROM pets WHERE type_id=:id",
-    			pettype_params,
+    			query("SELECT pets.id, name, birth_date, type_id, breed_id, owner_id FROM pets WHERE breed_id=:id",
+    			breed_params,
     			BeanPropertyRowMapper.newInstance(Pet.class));
 		// cascade delete pets
 		for (Pet pet : pets){
@@ -139,7 +140,7 @@ public class JdbcBreedRepositoryImpl implements BreedRepository {
 	        }
 	        this.namedParameterJdbcTemplate.update("DELETE FROM pets WHERE id=:id", pet_params);
         }
-        this.namedParameterJdbcTemplate.update("DELETE FROM types WHERE id=:id", pettype_params);
+    	this.namedParameterJdbcTemplate.update("DELETE FROM breeds WHERE id=:id", breed_params);
 	}
 
 }
