@@ -30,6 +30,7 @@ import {FormsModule} from '@angular/forms';
 import {PetService} from '../pet.service';
 import {OwnerService} from '../../owners/owner.service';
 import {PetTypeService} from '../../pettypes/pettype.service';
+import {BreedService} from '../../breeds/breed.service';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ActivatedRouteStub, RouterStub} from '../../testing/router-stubs';
 import {Pet} from '../pet';
@@ -37,6 +38,7 @@ import {Observable, of} from 'rxjs';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import {MatMomentDateModule} from '@angular/material-moment-adapter';
 import {PetType} from '../../pettypes/pettype';
+import {Breed} from '../../breeds/breed';
 import Spy = jasmine.Spy;
 
 class OwnerServiceStub {
@@ -58,6 +60,12 @@ class PetTypeServiceStub {
   }
 }
 
+class BreedServiceStub {
+  getBreeds(): Observable<Breed[]> {
+    return of();
+  }
+}
+
 describe('PetEditComponent', () => {
   let component: PetEditComponent;
   let fixture: ComponentFixture<PetEditComponent>;
@@ -74,6 +82,7 @@ describe('PetEditComponent', () => {
         {provide: PetService, useClass: PetServiceStub},
         {provide: OwnerService, useClass: OwnerServiceStub},
         {provide: PetTypeService, useClass: PetTypeServiceStub},
+        {provide: BreedService, useClass: BreedServiceStub},
         {provide: Router, useClass: RouterStub},
         {provide: ActivatedRoute, useClass: ActivatedRouteStub}
       ]
@@ -89,6 +98,7 @@ describe('PetEditComponent', () => {
       name: 'Leo',
       birthDate: '2010-09-07',
       type: {id: 1, name: 'cat'},
+      breed: {id: 1, name: 'siamese'},
       ownerId: 1,
       owner: {
         id: 1,

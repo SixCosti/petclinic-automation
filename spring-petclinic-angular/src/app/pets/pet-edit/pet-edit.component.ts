@@ -28,6 +28,8 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {Owner} from '../../owners/owner';
 import {PetType} from '../../pettypes/pettype';
 import {PetTypeService} from '../../pettypes/pettype.service';
+import {Breed} from '../../breeds/breed';
+import {BreedService} from '../../breeds/breed.service';
 
 import * as moment from 'moment';
 import {OwnerService} from '../../owners/owner.service';
@@ -40,12 +42,15 @@ import {OwnerService} from '../../owners/owner.service';
 export class PetEditComponent implements OnInit {
   pet: Pet;
   @Input() currentType: PetType;
+  @Input() currentBreed: Breed;
   currentOwner: Owner;
   petTypes: PetType[];
+  breeds: Breed[];
   errorMessage: string;
 
   constructor(private petService: PetService,
               private petTypeService: PetTypeService,
+              private breedService: BreedService,
               private ownerService: OwnerService,
               private router: Router,
               private route: ActivatedRoute) {
@@ -53,12 +58,18 @@ export class PetEditComponent implements OnInit {
     this.currentOwner = {} as Owner;
     this.currentType = {} as PetType;
     this.petTypes = [];
+    this.currentBreed = {} as Breed;
+    this.breeds = [];
   }
 
   ngOnInit() {
 
     this.petTypeService.getPetTypes().subscribe(
       pettypes => this.petTypes = pettypes,
+      error => this.errorMessage = error as any);
+    
+    this.breedService.getBreeds().subscribe(
+      breeds => this.breeds = breeds,
       error => this.errorMessage = error as any);
 
     const petId = this.route.snapshot.params.id;
@@ -70,6 +81,7 @@ export class PetEditComponent implements OnInit {
             this.currentOwner = response;
           });
         this.currentType = this.pet.type;
+        this.currentBreed = this.pet.breed;
       },
       error => this.errorMessage = error as any);
 
@@ -77,6 +89,7 @@ export class PetEditComponent implements OnInit {
 
   onSubmit(pet: Pet) {
     pet.type = this.currentType;
+    pet.breed = this.currentBreed;
     const that = this;
     // format output from datepicker to short string yyyy-mm-dd format (rfc3339)
     pet.birthDate = moment(pet.birthDate).format('YYYY-MM-DD');

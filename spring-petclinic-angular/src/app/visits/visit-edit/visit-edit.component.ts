@@ -25,6 +25,7 @@ import {Visit} from '../visit';
 import {Pet} from '../../pets/pet';
 import {Owner} from '../../owners/owner';
 import {PetType} from '../../pettypes/pettype';
+import {Breed} from '../../breeds/breed';
 import {VisitService} from '../visit.service';
 import {ActivatedRoute, Router} from '@angular/router';
 
@@ -42,6 +43,7 @@ export class VisitEditComponent implements OnInit {
   currentPet: Pet;
   currentOwner: Owner;
   currentPetType: PetType;
+  currentBreed: Breed;
   updateSuccess = false;
   errorMessage: string;
 
@@ -54,6 +56,7 @@ export class VisitEditComponent implements OnInit {
     this.currentPet = {} as Pet;
     this.currentOwner = {} as Owner;
     this.currentPetType = {} as PetType;
+    this.currentBreed = {} as Breed;
   }
 
   ngOnInit() {
@@ -65,6 +68,7 @@ export class VisitEditComponent implements OnInit {
           pet => {
             this.currentPet = pet;
             this.currentPetType = pet.type;
+            this.currentBreed = pet.breed;
             this.ownerService.getOwnerById(pet.ownerId).subscribe(
               owner => {
                 this.currentOwner = owner;

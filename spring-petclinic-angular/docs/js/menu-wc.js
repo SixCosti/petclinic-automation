@@ -246,6 +246,50 @@ customElements.define('compodoc-menu', class extends HTMLElement {
                                 <a href="modules/PettypesRoutingModule.html" data-type="entity-link">PettypesRoutingModule</a>
                             </li>
                             <li class="link">
+                                <a href="modules/BreedsModule.html" data-type="entity-link">BreedsModule</a>
+                                    <li class="chapter inner">
+                                        <div class="simple menu-toggler" data-toggle="collapse" ${ isNormalMode ?
+                                            'data-target="#components-links-module-BreedsModule-d1d33565fb7bf22f393bf0178bee2b99"' : 'data-target="#xs-components-links-module-BreedsModule-d1d33565fb7bf22f393bf0178bee2b99"' }>
+                                            <span class="icon ion-md-cog"></span>
+                                            <span>Components</span>
+                                            <span class="icon ion-ios-arrow-down"></span>
+                                        </div>
+                                        <ul class="links collapse" ${ isNormalMode ? 'id="components-links-module-BreedsModule-d1d33565fb7bf22f393bf0178bee2b99"' :
+                                            'id="xs-components-links-module-BreedsModule-d1d33565fb7bf22f393bf0178bee2b99"' }>
+                                            <li class="link">
+                                                <a href="components/BreedAddComponent.html"
+                                                    data-type="entity-link" data-context="sub-entity" data-context-id="modules">BreedAddComponent</a>
+                                            </li>
+                                            <li class="link">
+                                                <a href="components/BreedEditComponent.html"
+                                                    data-type="entity-link" data-context="sub-entity" data-context-id="modules">BreedEditComponent</a>
+                                            </li>
+                                            <li class="link">
+                                                <a href="components/BreedListComponent.html"
+                                                    data-type="entity-link" data-context="sub-entity" data-context-id="modules">BreedListComponent</a>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                <li class="chapter inner">
+                                    <div class="simple menu-toggler" data-toggle="collapse" ${ isNormalMode ?
+                                        'data-target="#injectables-links-module-BreedsModule-d1d33565fb7bf22f393bf0178bee2b99"' : 'data-target="#xs-injectables-links-module-BreedsModule-d1d33565fb7bf22f393bf0178bee2b99"' }>
+                                        <span class="icon ion-md-arrow-round-down"></span>
+                                        <span>Injectables</span>
+                                        <span class="icon ion-ios-arrow-down"></span>
+                                    </div>
+                                    <ul class="links collapse" ${ isNormalMode ? 'id="injectables-links-module-BreedsModule-d1d33565fb7bf22f393bf0178bee2b99"' :
+                                        'id="xs-injectables-links-module-BreedsModule-d1d33565fb7bf22f393bf0178bee2b99"' }>
+                                        <li class="link">
+                                            <a href="injectables/BreedService.html"
+                                                data-type="entity-link" data-context="sub-entity" data-context-id="modules" }>BreedService</a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </li>
+                            <li class="link">
+                                <a href="modules/BreedsRoutingModule.html" data-type="entity-link">BreedsRoutingModule</a>
+                            </li>
+                            <li class="link">
                                 <a href="modules/SpecialtiesModule.html" data-type="entity-link">SpecialtiesModule</a>
                                     <li class="chapter inner">
                                         <div class="simple menu-toggler" data-toggle="collapse" ${ isNormalMode ?
@@ -448,6 +492,9 @@ customElements.define('compodoc-menu', class extends HTMLElement {
                             </li>
                             <li class="link">
                                 <a href="interfaces/PetType.html" data-type="entity-link">PetType</a>
+                            </li>
+                            <li class="link">
+                                <a href="interfaces/Breed.html" data-type="entity-link">Breed</a>
                             </li>
                             <li class="link">
                                 <a href="interfaces/Specialty.html" data-type="entity-link">Specialty</a>

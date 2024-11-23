@@ -24,9 +24,11 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {Pet} from '../pet';
 import {PetType} from '../../pettypes/pettype';
+import {Breed} from '../../breeds/breed';
 import {Owner} from '../../owners/owner';
 import {ActivatedRoute, Router} from '@angular/router';
 import {PetTypeService} from '../../pettypes/pettype.service';
+import {BreedService} from '../../breeds/breed.service';
 import {PetService} from '../pet.service';
 import {OwnerService} from '../../owners/owner.service';
 
@@ -40,22 +42,30 @@ import * as moment from 'moment';
 export class PetAddComponent implements OnInit {
   pet: Pet;
   @Input() currentType: PetType;
+  @Input() currentBreed: Breed;
   currentOwner: Owner;
   petTypes: PetType[];
+  breeds: Breed[];
   addedSuccess = false;
   errorMessage: string;
 
   constructor(private ownerService: OwnerService, private petService: PetService,
-              private petTypeService: PetTypeService, private router: Router, private route: ActivatedRoute) {
+              private petTypeService: PetTypeService, private breedService: BreedService, private router: Router, private route: ActivatedRoute) {
     this.pet = {} as Pet;
     this.currentOwner = {} as Owner;
     this.currentType = {} as PetType;
     this.petTypes = [];
+    this.currentBreed = {} as Breed;
+    this.breeds = [];
   }
 
   ngOnInit() {
     this.petTypeService.getPetTypes().subscribe(
       pettypes => this.petTypes = pettypes,
+      error => this.errorMessage = error as any);
+
+    this.breedService.getBreeds().subscribe(
+      breeds => this.breeds = breeds,
       error => this.errorMessage = error as any);
 
     const ownerId = this.route.snapshot.params.id;

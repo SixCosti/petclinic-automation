@@ -23,6 +23,7 @@
 import {Owner} from '../owners/owner';
 import {Visit} from '../visits/visit';
 import {PetType} from '../pettypes/pettype';
+import {Breed} from '../breeds/breed';
 
 export interface Pet {
   id: number;
@@ -30,6 +31,7 @@ export interface Pet {
   name: string;
   birthDate: string;
   type: PetType;
+  breed: Breed;
   owner: Owner;
   visits: Visit[];
 }
