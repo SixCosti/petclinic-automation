@@ -85,6 +85,7 @@ describe('VisitAddComponent', () => {
       name: 'Leo',
       birthDate: '2010-09-07',
       type: {id: 1, name: 'cat'},
+      breed: {id: 1, name: 'siamese'},
       ownerId: 1,
       owner: {
         id: 1,

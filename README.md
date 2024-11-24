@@ -18,12 +18,16 @@ Testing the application on the frontend and adding new front elements (if necces
 The backend which ensure that the database it's updated accordingly and the website funstion properly.
 
 - JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./mvnw spring-boot:run
-- JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 mvn clean install (in case that won't work)
+- JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 mvn clean install (for tests)
 
 The frontend which involves the end-user experience and the UI user-friendly elements.
 
 - ng build (once)
 - ng serve
+- ng test 
+
+chrome env var neccesary: 
+- export CHROME_BIN=/usr/bin/chromium
 
 
 
