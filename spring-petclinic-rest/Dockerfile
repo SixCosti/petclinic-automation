@@ -1,5 +1,5 @@
 # Use of a Maven image for building
-FROM maven:3.8.8-openjdk-17 AS builder
+FROM maven:3.8.8-eclipse-temurin-17 AS builder
 COPY . /app
 WORKDIR /app
 RUN mvn clean package
