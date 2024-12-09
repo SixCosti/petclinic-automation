@@ -1,0 +1,26 @@
+- hosts: all
+  become: yes
+  tasks:
+    - name: Install Docker Compose
+      apt:
+        name: docker-compose
+        state: present
+        update_cache: yes
+
+    - name: Remove 'build' directives in docker-compose.yml for Ansible
+      lineinfile:
+        path: /home/admin/docker-compose.yml
+        regexp: '^ *build:.*'
+        state: absent
+
+    - name: Start Docker containers using Docker Compose without building images
+      shell: docker-compose up -d --no-build
+      args:
+        chdir: /home/admin
+
+    - name: Restore 'docker-compose.yml' file by uncommenting the 'build' directives
+      lineinfile:
+        path: /home/admin/docker-compose.yml
+        regexp: '^# *build:'
+        line: 'build:'
+        backrefs: yes
