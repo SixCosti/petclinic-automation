@@ -1,26 +1,42 @@
+---
 - hosts: all
   become: yes
   tasks:
-    - name: Install Docker Compose
+    - name: Update and install required packages
       apt:
-        name: docker-compose
+        name: "{{ item }}"
         state: present
         update_cache: yes
+      with_items:
+        - curl
+        - apt-transport-https
+        - ca-certificates
 
-    - name: Remove 'build' directives in docker-compose.yml for Ansible
-      lineinfile:
-        path: /home/admin/docker-compose.yml
-        regexp: '^ *build:.*'
-        state: absent
-
-    - name: Start Docker containers using Docker Compose without building images
-      shell: docker-compose up -d --no-build
+    - name: Install K3s
+      shell: |
+        curl -sfL https://get.k3s.io | sh - 
       args:
-        chdir: /home/admin
+        executable: /bin/bash
 
-    - name: Restore 'docker-compose.yml' file by uncommenting the 'build' directives
-      lineinfile:
-        path: /home/admin/docker-compose.yml
-        regexp: '^# *build:'
-        line: 'build:'
-        backrefs: yes
+    - name: Ensure the correct permissions on the kubeconfig file
+      file:
+        path: /etc/rancher/k3s/k3s.yaml
+        mode: '0644'  # Set permissions so it's readable by all users
+      when: ansible_facts['os_family'] == "Debian"
+
+    - name: Ensure /root/.kube directory exists
+      file:
+        path: /root/.kube
+        state: directory
+        mode: '0755'
+
+    - name: Create K3s kubeconfig symlink for root access
+      file:
+        src: /etc/rancher/k3s/k3s.yaml
+        dest: /root/.kube/config
+        state: link
+
+    - name: Apply deployment.yaml using kubectl
+      shell: |
+        export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+        kubectl apply -f /home/admin/deployment.yaml

@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pet-clinic-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pet-clinic-backend
+  template:
+    metadata:
+      labels:
+        app: pet-clinic-backend
+    spec:
+      containers:
+        - name: pet-clinic-backend
+          image: costi0/pet-clinic-backend
+          ports:
+            - containerPort: 9966
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pet-clinic-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pet-clinic-frontend
+  template:
+    metadata:
+      labels:
+        app: pet-clinic-frontend
+    spec:
+      containers:
+        - name: pet-clinic-frontend
+          image: costi0/pet-clinic-frontend
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pet-clinic-backend
+spec:
+  selector:
+    app: pet-clinic-backend
+  ports:
+    - protocol: TCP
+      port: 9966
+      targetPort: 9966
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pet-clinic-frontend
+spec:
+  selector:
+    app: pet-clinic-frontend
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: NodePort
