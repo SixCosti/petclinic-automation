@@ -3,27 +3,29 @@ provider "aws" {
 }
 
 resource "aws_instance" "pet_clinic" {
-  ami           = "ami-0715d656023fe21b4" # Debian AMI
-  instance_type = "t2.micro"
+  ami           = "ami-0715d656023fe21b4"
+  instance_type = "t2.medium"
   key_name      = var.key_name
   tags = {
     Name = "PetClinicServer"
   }
 
+  root_block_device {
+    volume_size           = 20
+    volume_type           = "gp3"
+    delete_on_termination = true
+  }
+
   user_data = <<-EOF
     #!/bin/bash
     sudo apt update -y
-    sudo apt install -y docker.io docker-compose python3
-    sudo systemctl enable docker
-    sudo systemctl start docker
   EOF
 
   vpc_security_group_ids = [aws_security_group.petclinic_sg.id]
 
-  # Copy docker-compose.yml to the instance
   provisioner "file" {
-    source      = "../docker-compose.yml"
-    destination = "/home/admin/docker-compose.yml"
+    source      = "kubernetes/deployment.yaml"
+    destination = "/home/admin/deployment.yaml"
     connection {
       type        = "ssh"
       user        = "admin"
@@ -32,7 +34,6 @@ resource "aws_instance" "pet_clinic" {
     }
   }
 
-  # Generate inventory file for Ansible
   provisioner "local-exec" {
     command = <<EOT
     echo "[all]" > ansible/inventory.ini
@@ -63,6 +64,13 @@ resource "aws_security_group" "petclinic_sg" {
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 0
+    to_port     = 65535  # All TCP ports
+    protocol    = "tcp"
+    cidr_blocks = ["my_ip"]
   }
 
   egress {
