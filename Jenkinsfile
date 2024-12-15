@@ -14,6 +14,11 @@ pipeline {
             steps {
                 dir('spring-petclinic-angular') {
                     sh '''
+                    apk add --no-cache chromium
+
+                    # Set the CHROME_BIN environment variable for Karma to use ChromeHeadless
+                    export CHROME_BIN=/usr/bin/chromium-browser
+
                     # Clean npm cache and node_modules to ensure a fresh start
                     npm cache clean --force
                     rm -rf node_modules package-lock.json
@@ -29,7 +34,7 @@ pipeline {
             steps {
                 dir('spring-petclinic-angular') {
                     sh '''
-                    # Run Angular tests using Karma and ChromeHeadless
+                    export CHROME_BIN=/usr/bin/chromium-browser
                     ng test --watch=false --browsers=ChromeHeadless
                     '''
                 }
