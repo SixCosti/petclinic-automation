@@ -13,6 +13,19 @@ pipeline {
             }
         }
 
+        stage('Setup PEM Key') {
+            steps {
+                withCredentials([file(credentialsId: 'test-pem-key', variable: 'PEM_FILE')]) {
+                    sh '''
+                    mkdir -p ~/.ssh
+                    cp $PEM_FILE ~/.ssh/test.pem
+                    chmod 400 ~/.ssh/test.pem
+                    echo "PEM key has been copied and permissions set."
+                    '''
+                }
+            }
+        }
+
         stage('Copy terraform.tfvars from Secret File') {
             steps {
                 withCredentials([file(credentialsId: 'tfvars', variable: 'TFVARS_FILE')]) {
@@ -39,19 +52,6 @@ pipeline {
                         // Run Terraform apply
                         sh 'terraform apply -auto-approve'
                     }
-                }
-            }
-        }
-
-        stage('Setup PEM Key') {
-            steps {
-                withCredentials([file(credentialsId: 'test-pem-key', variable: 'PEM_FILE')]) {
-                    sh '''
-                    mkdir -p ~/.ssh
-                    cp $PEM_FILE ~/.ssh/test.pem
-                    chmod 400 ~/.ssh/test.pem
-                    echo "PEM key has been copied and permissions set."
-                    '''
                 }
             }
         }
