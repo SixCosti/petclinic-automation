@@ -14,7 +14,7 @@ pipeline {
             steps {
                 dir('spring-petclinic-angular') {
                     sh '''
-                    apk add --no-cache chromium
+                    sudo yum install -y chromium
 
                     # Set the CHROME_BIN environment variable for Karma to use ChromeHeadless
                     export CHROME_BIN=/usr/bin/chromium-browser
