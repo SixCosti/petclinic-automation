@@ -6,21 +6,36 @@ pipeline {
                 git branch: 'debug', url: 'https://github.com/SixCosti/petclinic-automation.git'
             }
         }
-        stage('Frontend Tests') {
+        stage('Install Dependencies') {
             agent {
-                docker { image 'node:16' }  // Using Node.js Docker image
+                docker { image 'node:16.14-alpine' }  // Use the same Node.js version as in your Dockerfile
             }
             steps {
                 dir('spring-petclinic-angular') {
                     sh '''
-                    # Clean npm cache and fix any potential permission issues
+                    # Install necessary dependencies
+                    apk update && apk add --no-cache python3 py3-pip build-base
+                    npm install -g node-gyp
+                    npm install -g @angular/cli@16  # Install Angular CLI globally
+
+                    # Clean npm cache and node_modules to ensure a fresh start
                     npm cache clean --force
                     rm -rf node_modules package-lock.json
 
-                    # Install dependencies
+                    # Install project dependencies
                     npm install --legacy-peer-deps
-
-                    # Run Angular tests using Karma
+                    '''
+                }
+            }
+        }
+        stage('Frontend Tests') {
+            agent {
+                docker { image 'node:16.14-alpine' }  // Use the same Node.js version as in your Dockerfile
+            }
+            steps {
+                dir('spring-petclinic-angular') {
+                    sh '''
+                    # Run Angular tests using Karma and ChromeHeadless
                     ng test --watch=false --browsers=ChromeHeadless
                     '''
                 }
