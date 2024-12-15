@@ -1,8 +1,5 @@
 pipeline {
     agent any
-    environment {
-        AWS_CREDENTIALS = 'aws'  // If you're using AWS credentials, you can add them here
-    }
     stages {
         stage('Checkout Code') {
             steps {
@@ -11,19 +8,15 @@ pipeline {
         }
         stage('Frontend Tests') {
             agent {
-                docker { image 'angular/angular-cli:latest' }  // Use pre-built Angular CLI image
+                docker { image 'node:18' }  // Use Node.js Docker image
             }
             steps {
                 dir('spring-petclinic-angular') {
                     sh '''
-                    # Clean npm cache and remove old node_modules
-                    npm cache clean --force
-                    rm -rf node_modules package-lock.json
-
-                    # Install project dependencies
+                    # Install dependencies
                     npm install --legacy-peer-deps
 
-                    # Run Angular unit tests with Karma
+                    # Run Angular tests
                     ng test --watch=false --browsers=ChromeHeadless
                     '''
                 }
