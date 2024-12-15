@@ -17,6 +17,9 @@ spec:
           image: costi0/pet-clinic-backend
           ports:
             - containerPort: 9966
+          env:
+            - name: DB_HOST
+              value: "${DB_HOST}"
 ---
 apiVersion: apps/v1
 kind: Deployment
