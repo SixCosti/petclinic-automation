@@ -42,13 +42,7 @@ pipeline {
                 dir('petclinic-infra') {
                     script {
                         // Initialize Terraform to use the S3 bucket as the backend
-                        sh '''
-                        terraform init \
-                          -backend-config="bucket=terraform-state-bucket-00" \
-                          -backend-config="key=terraform-tfstate/terraform.tfstate" \
-                          -backend-config="region=${AWS_DEFAULT_REGION}" \
-                          -backend-config="encrypt=true" \
-                        '''
+                        sh 'terraform init' 
                         // Run Terraform apply
                         sh 'terraform apply -auto-approve'
                     }
