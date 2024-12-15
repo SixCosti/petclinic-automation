@@ -67,16 +67,18 @@ pipeline {
             steps {
                 script {
                     dir('petclinic-infra/ansible') {  // Change to the correct directory
-                        ansiblePlaybook(
-                            playbook: 'main.yaml',  // Now the relative path is from 'petclinic-infra/ansible'
-                            inventory: 'inventory.ini',  // Same for the inventory
-                            extraVars: [ansible_verbosity: '-v']  // Add verbosity if needed
-                            sshCommonArgs: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'  // Disable host key checking
-                        )
+                        // Disable host key checking using ANSIBLE_SSH_ARGS
+                        withEnv(['ANSIBLE_SSH_ARGS=-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null']) {
+                            ansiblePlaybook(
+                                playbook: 'main.yaml',  // Now the relative path is from 'petclinic-infra/ansible'
+                                inventory: 'inventory.ini',  // Same for the inventory
+                                extraVars: [ansible_verbosity: '-v']  // Add verbosity if needed
+                            )
                     }
                 }
             }
         }
+    }
 
         stage('Upload Inventory to S3') {
             steps {
