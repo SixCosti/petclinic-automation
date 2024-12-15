@@ -1,6 +1,8 @@
 ---
-- hosts: all
+- hosts: app
   become: yes
+  vars:
+    db_host: "{{ groups['db'][0] }}"  # This references the first host in the "db" group
   tasks:
     - name: Update and install required packages
       apt:
@@ -22,7 +24,7 @@
       file:
         path: /etc/rancher/k3s/k3s.yaml
         mode: '0644'  # Set permissions so it's readable by all users
-      when: ansible_facts['os_family'] == "Debian"
+      # when: ansible_facts['os_family'] == "Debian"
 
     - name: Ensure /root/.kube directory exists
       file:
@@ -36,7 +38,15 @@
         dest: /root/.kube/config
         state: link
 
+      # Workaround of passing the db endpoint to the backend cluster, needs upgrading to a configMap
+      # - name: Debug DB_HOST
+      #   debug:
+      #     msg: "The database host is {{ db_host }}"
+
     - name: Apply deployment.yaml using kubectl
       shell: |
         export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+        sed -i "s|\${DB_HOST}|{{ db_host }}|g" /home/admin/deployment.yaml
         kubectl apply -f /home/admin/deployment.yaml
+      args:
+        executable: /bin/bash

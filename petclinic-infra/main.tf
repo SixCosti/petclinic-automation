@@ -19,9 +19,23 @@ resource "aws_instance" "pet_clinic" {
   user_data = <<-EOF
     #!/bin/bash
     sudo apt update -y
+    echo "DB_HOST=${aws_db_instance.petclinic_db.address}" | sudo tee -a /etc/environment
+    source /etc/environment
   EOF
 
   vpc_security_group_ids = [aws_security_group.petclinic_sg.id]
+
+
+  provisioner "local-exec" {
+    command = <<EOT
+    echo "[app]" > ansible/inventory.ini
+    echo "${aws_instance.pet_clinic.public_ip} ansible_ssh_user=admin ansible_ssh_private_key_file=~/.ssh/${var.key_name}.pem" >> ansible/inventory.ini
+    echo "[db]" >> ansible/inventory.ini
+    echo "${aws_db_instance.petclinic_db.address}" >> ansible/inventory.ini
+    EOT
+  }
+
+  depends_on = [aws_db_instance.petclinic_db]
 
   provisioner "file" {
     source      = "kubernetes/deployment.yaml"
@@ -32,13 +46,6 @@ resource "aws_instance" "pet_clinic" {
       private_key = file("~/.ssh/${var.key_name}.pem")
       host        = self.public_ip
     }
-  }
-
-  provisioner "local-exec" {
-    command = <<EOT
-    echo "[all]" > ansible/inventory.ini
-    echo "${self.public_ip} ansible_ssh_user=admin ansible_ssh_private_key_file=~/.ssh/${var.key_name}.pem" >> ansible/inventory.ini
-    EOT
   }
 }
 
@@ -55,6 +62,13 @@ resource "aws_security_group" "petclinic_sg" {
   ingress {
     from_port   = 9966
     to_port     = 9966
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 3306
+    to_port     = 3306
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -78,5 +92,24 @@ resource "aws_security_group" "petclinic_sg" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_db_instance" "petclinic_db" {
+  allocated_storage       = 20
+  engine                  = "mysql"
+  engine_version          = "8.0"
+  instance_class          = "db.t4g.micro"
+  identifier              = "petclinic-db"
+  username                = var.db_username
+  password                = var.db_password
+  publicly_accessible     = false
+  vpc_security_group_ids  = [aws_security_group.petclinic_sg.id]
+  skip_final_snapshot     = true
+  db_name                 = "petclinic"
+
+
+  tags = {
+    Name = "PetClinicRDS"
   }
 }

@@ -107,5 +107,6 @@ terraform.rc
 #node module
 node_modules/
 
+inventory.ini
 
 *.deb
