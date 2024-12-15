@@ -84,7 +84,7 @@ resource "aws_security_group" "petclinic_sg" {
     from_port   = 0
     to_port     = 65535  # All TCP ports
     protocol    = "tcp"
-    cidr_blocks = ["my_ip"]
+    cidr_blocks = [var.my_ip]
   }
 
   egress {
