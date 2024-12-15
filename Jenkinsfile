@@ -13,8 +13,9 @@ pipeline {
             steps {
                 dir('spring-petclinic-angular') {
                     sh '''
-                    # Fix npm permissions
-                    sudo chown -R $(whoami) ~/.npm
+                    # Fix npm permissions by using root user
+                    echo "Fixing npm permissions"
+                    chown -R root:root ~/.npm
 
                     # Install dependencies
                     npm install -g node-gyp
