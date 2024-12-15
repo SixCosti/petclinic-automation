@@ -71,6 +71,7 @@ pipeline {
                             playbook: 'main.yaml',  // Now the relative path is from 'petclinic-infra/ansible'
                             inventory: 'inventory.ini',  // Same for the inventory
                             extraVars: [ansible_verbosity: '-v']  // Add verbosity if needed
+                            sshCommonArgs: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'  // Disable host key checking
                         )
                     }
                 }
