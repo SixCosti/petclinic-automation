@@ -54,8 +54,8 @@ pipeline {
             steps {
                 script {
                     ansiblePlaybook(
-                        playbook: 'petclinic-infra/ansible/main.yml',
-                        inventory: 'petclinic-infra/ansible/inventory.ini',  // Specify the inventory file
+                        playbook: 'ansible/main.yml',
+                        inventory: 'ansible/inventory.ini',  // Specify the inventory file
                         extraVars: [ansible_verbosity: '-v']  // Add verbosity if needed
                     )
                 }
