@@ -53,11 +53,13 @@ pipeline {
         stage('Ansible Configuration') {
             steps {
                 script {
-                    ansiblePlaybook(
-                        playbook: 'ansible/main.yml',
-                        inventory: 'ansible/inventory.ini',  // Specify the inventory file
-                        extraVars: [ansible_verbosity: '-v']  // Add verbosity if needed
-                    )
+                    dir('petclinic-infra/ansible') {  // Change to the correct directory
+                        ansiblePlaybook(
+                            playbook: 'main.yml',  // Now the relative path is from 'petclinic-infra/ansible'
+                            inventory: 'inventory.ini',  // Same for the inventory
+                            extraVars: [ansible_verbosity: '-v']  // Add verbosity if needed
+                        )
+                    }
                 }
             }
         }
