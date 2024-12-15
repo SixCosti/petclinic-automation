@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    tools {
+        nodejs 'NodeJS 16'  // Use NodeJS 16 tool configured in Jenkins
+    }
     stages {
         stage('Checkout Code') {
             steps {
@@ -8,21 +11,9 @@ pipeline {
         }
 
         stage('Install Dependencies') {
-            agent {
-                docker { image 'node:16.14-alpine' }
-            }
             steps {
                 dir('spring-petclinic-angular') {
                     sh '''
-                    # Fix npm permissions by using the correct npm cache directory path
-                    echo "Fixing npm permissions"
-                    npm config set cache /tmp/.npm
-                    chown -R node:node /tmp/.npm
-
-                    # Install necessary dependencies
-                    npm install -g node-gyp
-                    npm install -g @angular/cli@16
-
                     # Clean npm cache and node_modules to ensure a fresh start
                     npm cache clean --force
                     rm -rf node_modules package-lock.json
@@ -35,9 +26,6 @@ pipeline {
         }
 
         stage('Frontend Tests') {
-            agent {
-                docker { image 'node:16.14-alpine' }
-            }
             steps {
                 dir('spring-petclinic-angular') {
                     sh '''
