@@ -1,8 +1,8 @@
 pipeline {
     agent any
-    tools {
-        nodejs 'NodeJS 18'  // NodeJS 18 tool configured in Jenkins
-    }
+    // tools {
+    //     nodejs 'NodeJS 18'  // NodeJS 18 tool configured in Jenkins
+    // }
     stages {
         stage('Checkout Code') {
             steps {
