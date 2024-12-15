@@ -10,16 +10,15 @@ pipeline {
             }
         }
         stage('Frontend Tests') {
+            agent {
+                docker { image 'node:18' }  // Use Node.js 18 Docker image for this stage
+            }
             steps {
                 dir('spring-petclinic-angular') {
-                    sh 'apk update && apk add --no-cache'
-                    sh 'python3'
-                    sh 'py3-pip'
-                    sh 'build-base'
-                    sh 'npm install -g node-gyp'
-                    sh 'npm install -g @angular/cli@16'
-                    sh 'npm install'
-                    sh 'ng test --watch=false'
+                    sh '''
+                    npm install
+                    ng test --watch=false
+                    '''
                 }
             }
         }
@@ -33,13 +32,13 @@ pipeline {
         stage('Terraform Init & Apply') {
             steps {
                 dir('petclinic-infra') {
-                script {
-                    sh 'terraform init'
-                    sh 'terraform apply -auto-approve'
+                    script {
+                        sh 'terraform init'
+                        sh 'terraform apply -auto-approve'
+                    }
                 }
             }
         }
-    }    
         stage('Ansible Configuration') {
             steps {
                 script {
