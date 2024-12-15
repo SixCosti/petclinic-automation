@@ -11,23 +11,14 @@ pipeline {
         }
         stage('Frontend Tests') {
             agent {
-                docker { image 'node:18' }  // Use Node.js 18 Docker image
+                docker { image 'angular/angular-cli:latest' }  // Use pre-built Angular CLI image
             }
             steps {
                 dir('spring-petclinic-angular') {
                     sh '''
-                    # Set a writable cache directory for npm to avoid permission issues
-                    export NPM_CONFIG_CACHE=/tmp/.npm
-
-                    # Set a custom directory for global npm packages to avoid permission issues
-                    export NPM_CONFIG_PREFIX=/tmp/.npm-global
-
                     # Clean npm cache and remove old node_modules
                     npm cache clean --force
                     rm -rf node_modules package-lock.json
-
-                    # Install Angular CLI globally in the custom directory
-                    npm install -g @angular/cli
 
                     # Install project dependencies
                     npm install --legacy-peer-deps
