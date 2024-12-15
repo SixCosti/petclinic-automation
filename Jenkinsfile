@@ -8,15 +8,17 @@ pipeline {
         }
         stage('Install Dependencies') {
             agent {
-                docker { image 'node:16.14-alpine' }  // Use the same Node.js version as in your Dockerfile
+                docker { image 'node:16.14-alpine' }
             }
             steps {
                 dir('spring-petclinic-angular') {
                     sh '''
-                    # Install necessary dependencies
-                    apk update && apk add --no-cache python3 py3-pip build-base
+                    # Fix npm permissions
+                    sudo chown -R $(whoami) ~/.npm
+
+                    # Install dependencies
                     npm install -g node-gyp
-                    npm install -g @angular/cli@16  # Install Angular CLI globally
+                    npm install -g @angular/cli@16
 
                     # Clean npm cache and node_modules to ensure a fresh start
                     npm cache clean --force
@@ -30,7 +32,7 @@ pipeline {
         }
         stage('Frontend Tests') {
             agent {
-                docker { image 'node:16.14-alpine' }  // Use the same Node.js version as in your Dockerfile
+                docker { image 'node:16.14-alpine' }
             }
             steps {
                 dir('spring-petclinic-angular') {
