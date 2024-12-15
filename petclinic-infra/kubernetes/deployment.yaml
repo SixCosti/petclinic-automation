@@ -52,7 +52,7 @@ spec:
     - protocol: TCP
       port: 9966
       targetPort: 9966
-  type: ClusterIP
+  type: LoadBalancer  # Use of LoadBalancer for stable external IPs
 ---
 apiVersion: v1
 kind: Service
@@ -65,4 +65,4 @@ spec:
     - protocol: TCP
       port: 8080
       targetPort: 8080
-  type: NodePort
+  type: LoadBalancer  # Use of LoadBalancer for stable external IPs
