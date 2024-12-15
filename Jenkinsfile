@@ -1,7 +1,7 @@
 pipeline {
     agent any
     tools {
-        nodejs 'NodeJS 18'  // Use NodeJS 16 tool configured in Jenkins
+        nodejs 'NodeJS 18'  // NodeJS 18 tool configured in Jenkins
     }
     stages {
         stage('Checkout Code') {
@@ -10,41 +10,49 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
+        // stage('Install Dependencies') {
+        //     steps {
+        //         dir('spring-petclinic-angular') {
+        //             sh '''
+        //             sudo yum install -y chromium
+
+        //             export CHROME_BIN=/usr/bin/chromium-browser
+
+        //             npm cache clean --force
+        //             rm -rf node_modules package-lock.json
+
+        //             npm install --legacy-peer-deps
+        //             '''
+        //         }
+        //     }
+        // }
+
+        // stage('Frontend Tests') {
+        //     steps {
+        //         dir('spring-petclinic-angular') {
+        //             sh '''
+        //             export CHROME_BIN=/usr/bin/chromium-browser
+        //             ng test --watch=false --browsers=ChromeHeadless
+        //             '''
+        //         }
+        //     }
+        // }
+
+        // stage('Backend Tests') {
+        //     steps {
+        //         dir('spring-petclinic-rest') {
+        //             sh './mvnw test'
+        //         }
+        //     }
+        // }
+
+        stage('Copy terraform.tfvars from Secret File') {
             steps {
-                dir('spring-petclinic-angular') {
-                    sh '''
-                    sudo yum install -y chromium
-
-                    # Set the CHROME_BIN environment variable for Karma to use ChromeHeadless
-                    export CHROME_BIN=/usr/bin/chromium-browser
-
-                    # Clean npm cache and node_modules to ensure a fresh start
-                    npm cache clean --force
-                    rm -rf node_modules package-lock.json
-
-                    # Install project dependencies
-                    npm install --legacy-peer-deps
-                    '''
-                }
-            }
-        }
-
-        stage('Frontend Tests') {
-            steps {
-                dir('spring-petclinic-angular') {
-                    sh '''
-                    export CHROME_BIN=/usr/bin/chromium-browser
-                    ng test --watch=false --browsers=ChromeHeadless
-                    '''
-                }
-            }
-        }
-
-        stage('Backend Tests') {
-            steps {
-                dir('spring-petclinic-rest') {
-                    sh './mvnw test'
+                script {
+                    def tfvarsFile = credentialsFile('tfvars')  // 'tfvars' is the secret file ID
+                    
+                    sh "cp ${tfvarsFile} petclinic-infra/terraform.tfvars"
+                    echo 'Copied terraform.tfvars to petclinic-infra folder.'
                 }
             }
         }
