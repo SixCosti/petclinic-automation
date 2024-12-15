@@ -48,11 +48,11 @@ pipeline {
 
         stage('Copy terraform.tfvars from Secret File') {
             steps {
-                script {
-                    def tfvarsFile = credentialsFile('tfvars')  // 'tfvars' is the secret file ID
-                    
-                    sh "cp ${tfvarsFile} petclinic-infra/terraform.tfvars"
+                withCredentials([file(credentialsId: 'tfvars', variable: 'TFVARS_FILE')]) {
+                    sh '''
+                    cp $TFVARS_FILE petclinic-infra/terraform.tfvars
                     echo 'Copied terraform.tfvars to petclinic-infra folder.'
+                    '''
                 }
             }
         }
