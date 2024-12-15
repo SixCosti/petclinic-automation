@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        AWS_CREDENTIALS = 'aws'
+        AWS_CREDENTIALS = 'aws' 
     }
     stages {
         stage('Checkout Code') {
@@ -11,13 +11,20 @@ pipeline {
         }
         stage('Frontend Tests') {
             agent {
-                docker { image 'trion/ng-cli:14.0.0' }  // Angular CLI Docker image
+                docker { image 'node:18' }  
             }
             steps {
                 dir('spring-petclinic-angular') {
                     sh '''
-                    # Run Angular unit tests
-                    ng test --watch=false
+                    # Clean npm cache and remove old node_modules
+                    npm cache clean --force
+                    rm -rf node_modules package-lock.json
+
+                    # Install dependencies
+                    npm install --legacy-peer-deps
+
+                    # Run Angular unit tests with Karma
+                    ng test --watch=false --browsers=ChromeHeadless
                     '''
                 }
             }
@@ -49,7 +56,7 @@ pipeline {
     }
     post {
         always {
-            cleanWs()
+            cleanWs()  // Clean workspace after build
         }
         success {
             echo 'Pipeline execution was successful!'
