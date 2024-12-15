@@ -11,7 +11,7 @@ pipeline {
         }
         stage('Frontend Tests') {
             agent {
-                docker { image 'node:18' }  // Use Node.js 18 Docker image (or a custom Angular image)
+                docker { image 'node:18' }  // Use Node.js 18 Docker image
             }
             steps {
                 dir('spring-petclinic-angular') {
@@ -20,6 +20,8 @@ pipeline {
 
                     npm cache clean --force
                     rm -rf node_modules package-lock.json
+
+                    npm install -g @angular/cli
 
                     npm install --legacy-peer-deps
 
