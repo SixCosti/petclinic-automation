@@ -4,22 +4,6 @@ provider "aws" {
   region     = "eu-west-1"
 }
 
-# Check if an existing VPC with the tag "Name=PetClinicVPC" exists
-data "aws_vpc" "existing_vpc" {
-  filter {
-    name   = "tag:Name"
-    values = ["PetClinicVPC"]
-  }
-}
-
-# Check if an existing Security Group named "PetClinicSG" exists
-data "aws_security_group" "existing_sg" {
-  filter {
-    name   = "tag:Name"
-    values = ["PetClinicSG"]
-  }
-}
-
 resource "aws_instance" "pet_clinic" {
   ami           = "ami-0715d656023fe21b4"
   instance_type = "t2.medium"
@@ -41,8 +25,7 @@ resource "aws_instance" "pet_clinic" {
     source /etc/environment
   EOF
 
-  # Reference the existing SG if it exists, otherwise use the created one
-  vpc_security_group_ids = length(data.aws_security_group.existing_sg.id) > 0 ? [data.aws_security_group.existing_sg.id] : [aws_security_group.petclinic_sg[0].id]
+  vpc_security_group_ids = [aws_security_group.petclinic_sg.id]
 
   provisioner "local-exec" {
     command = <<EOT
@@ -65,11 +48,13 @@ resource "aws_instance" "pet_clinic" {
       host        = self.public_ip
     }
   }
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "aws_security_group" "petclinic_sg" {
-  count = length(data.aws_security_group.existing_sg.id) == 0 ? 1 : 0  # Only create if no existing SG is found
-
   name = "PetClinicSG"
 
   ingress {
@@ -124,11 +109,15 @@ resource "aws_db_instance" "petclinic_db" {
   username                = var.db_username
   password                = var.db_password
   publicly_accessible     = false
-  vpc_security_group_ids  = length(data.aws_security_group.existing_sg.id) > 0 ? [data.aws_security_group.existing_sg.id] : [aws_security_group.petclinic_sg[0].id]
+  vpc_security_group_ids  = [aws_security_group.petclinic_sg.id]
   skip_final_snapshot     = true
   db_name                 = "petclinic"
 
   tags = {
     Name = "PetClinicRDS"
+  }
+
+  lifecycle {
+    prevent_destroy = true
   }
 }

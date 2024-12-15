@@ -62,6 +62,7 @@ pipeline {
                 dir('petclinic-infra') {
                     script {
                         sh 'terraform init'
+                        sh 'terrafrom destroy -auto-approve'
                         sh 'terraform apply -auto-approve'
                     }
                 }
