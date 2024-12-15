@@ -6,6 +6,7 @@ pipeline {
                 git branch: 'debug', url: 'https://github.com/SixCosti/petclinic-automation.git'
             }
         }
+
         stage('Install Dependencies') {
             agent {
                 docker { image 'node:16.14-alpine' }
@@ -13,11 +14,12 @@ pipeline {
             steps {
                 dir('spring-petclinic-angular') {
                     sh '''
-                    # Fix npm permissions by using root user
+                    # Fix npm permissions by using the correct npm cache directory path
                     echo "Fixing npm permissions"
-                    chown -R root:root ~/.npm
+                    npm config set cache /tmp/.npm
+                    chown -R node:node /tmp/.npm
 
-                    # Install dependencies
+                    # Install necessary dependencies
                     npm install -g node-gyp
                     npm install -g @angular/cli@16
 
@@ -31,6 +33,7 @@ pipeline {
                 }
             }
         }
+
         stage('Frontend Tests') {
             agent {
                 docker { image 'node:16.14-alpine' }
@@ -44,6 +47,7 @@ pipeline {
                 }
             }
         }
+
         stage('Backend Tests') {
             steps {
                 dir('spring-petclinic-rest') {
@@ -51,6 +55,7 @@ pipeline {
                 }
             }
         }
+
         stage('Terraform Init & Apply') {
             steps {
                 dir('petclinic-infra') {
@@ -61,6 +66,7 @@ pipeline {
                 }
             }
         }
+
         stage('Ansible Configuration') {
             steps {
                 script {
@@ -69,6 +75,7 @@ pipeline {
             }
         }
     }
+
     post {
         always {
             cleanWs()  // Clean workspace after build
