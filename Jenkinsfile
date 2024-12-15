@@ -11,12 +11,12 @@ pipeline {
         }
         stage('Frontend Tests') {
             agent {
-                docker { image 'node:18' }  // Use Node.js 18 Docker image for this stage
+                docker { image 'trion/ng-cli:14.0.0' }  // Angular CLI Docker image
             }
             steps {
                 dir('spring-petclinic-angular') {
                     sh '''
-                    npm install
+                    # Run Angular unit tests
                     ng test --watch=false
                     '''
                 }
