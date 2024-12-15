@@ -1,7 +1,7 @@
 provider "aws" {
   access_key = var.aws_access_key
   secret_key = var.aws_secret_key
-  region     = "eu-west-1"
+  region = "eu-west-1"
 }
 
 resource "aws_instance" "pet_clinic" {
@@ -27,6 +27,7 @@ resource "aws_instance" "pet_clinic" {
 
   vpc_security_group_ids = [aws_security_group.petclinic_sg.id]
 
+
   provisioner "local-exec" {
     command = <<EOT
     echo "[app]" > ansible/inventory.ini
@@ -47,10 +48,6 @@ resource "aws_instance" "pet_clinic" {
       private_key = file("~/.ssh/${var.key_name}.pem")
       host        = self.public_ip
     }
-  }
-
-  lifecycle {
-    prevent_destroy = true
   }
 }
 
@@ -113,11 +110,8 @@ resource "aws_db_instance" "petclinic_db" {
   skip_final_snapshot     = true
   db_name                 = "petclinic"
 
+
   tags = {
     Name = "PetClinicRDS"
-  }
-
-  lifecycle {
-    prevent_destroy = true
   }
 }
