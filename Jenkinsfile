@@ -6,12 +6,18 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: 'main', url: 'https://github.com/SixCosti/petclinic-automation.git'
+                git branch: 'debug', url: 'https://github.com/SixCosti/petclinic-automation.git'
             }
         }
         stage('Frontend Tests') {
             steps {
                 dir('spring-petclinic-angular') {
+                    sh 'apk update && apk add --no-cache'
+                    sh 'python3'
+                    sh 'py3-pip'
+                    sh 'build-base'
+                    sh 'npm install -g node-gyp'
+                    sh 'npm install -g @angular/cli@16'
                     sh 'npm install'
                     sh 'ng test --watch=false'
                 }
