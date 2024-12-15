@@ -8,15 +8,19 @@ pipeline {
         }
         stage('Frontend Tests') {
             agent {
-                docker { image 'node:18' }  // Use Node.js Docker image
+                docker { image 'node:16' }  // Using Node.js Docker image
             }
             steps {
                 dir('spring-petclinic-angular') {
                     sh '''
+                    # Clean npm cache and fix any potential permission issues
+                    npm cache clean --force
+                    rm -rf node_modules package-lock.json
+
                     # Install dependencies
                     npm install --legacy-peer-deps
 
-                    # Run Angular tests
+                    # Run Angular tests using Karma
                     ng test --watch=false --browsers=ChromeHeadless
                     '''
                 }
