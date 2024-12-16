@@ -155,8 +155,8 @@ pipeline {
             }
         }
 
-        stage('Security Scan with OWASP ZAP') {
-            steps {
+stage('Security Scan with OWASP ZAP') {
+    steps {
         script {
             def appServerIP = sh(script: "awk '/\\[app\\]/ {getline; print}' ${INVENTORY_FILE_PATH} | cut -d' ' -f1", returnStdout: true).trim()
 
@@ -166,38 +166,31 @@ pipeline {
             sh """
                 sudo mkdir -p /tmp/zap-reports
                 sudo chmod -R 777 /tmp/zap-reports
-                sudo rm -rf /tmp/zap-reports/*
             """
 
             sh """
                 sudo docker run --rm -v /tmp/zap-reports:/zap/wrk:rw \
                 zaproxy/zap-stable zap-baseline.py \
-                -t ${frontendURL} -r zap_frontend_report.html
+                -t ${frontendURL}
             """
 
             sh """
                 sudo docker run --rm -v /tmp/zap-reports:/zap/wrk:rw \
                 zaproxy/zap-stable zap-baseline.py \
-                -t ${backendURL} -r zap_backend_report.html
+                -t ${backendURL}
             """
-
-            // Check the contents of the mounted directory
-            sh 'ls -l /tmp/zap-reports'
-            sh 'ls -l $(pwd)'
-
-            sh 'cp /tmp/zap-reports/* .'
-                }
-            }
-            post {
-                always {
-                    archiveArtifacts artifacts: '*.html', allowEmptyArchive: true
-                }
-                success {
-                    echo 'OWASP ZAP Scan completed successfully.'
-                }
-                failure {
-                    echo 'OWASP ZAP Scan failed. Check the reports for details.'
-                }
+        }
+    }
+    post {
+        always {
+            echo 'OWASP ZAP Scan completed.'
+        }
+        success {
+            echo 'OWASP ZAP Scan completed successfully.'
+        }
+        failure {
+            echo 'OWASP ZAP Scan failed. Check the logs for details.'
+        }
             }
         }
 
