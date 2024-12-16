@@ -1,12 +1,15 @@
 pipeline {
     agent any
+    // tools {
+    //     nodejs 'NodeJS 18'  // Use of NodeJS 18 tool configured in Jenkins
+    // }
     environment {
         // Set AWS credentials for Terraform to use S3 bucket
-        AWS_ACCESS_KEY_ID     = credentials('aws')  // Assume 'aws' is the ID of your AWS credentials in Jenkins
-        AWS_SECRET_ACCESS_KEY = credentials('aws')  // Same as above for the secret key
-        AWS_DEFAULT_REGION    = 'eu-west-1'          // Set the region for AWS (adjust as needed)
-        S3_BUCKET            = 'terraform-state-bucket-00'  // S3 bucket where inventory.ini is stored
-        INVENTORY_FILE_PATH  = 'petclinic-infra/ansible/inventory.ini' // Path to inventory file in the workspace
+        AWS_ACCESS_KEY_ID     = credentials('aws')  
+        AWS_SECRET_ACCESS_KEY = credentials('aws')  
+        AWS_DEFAULT_REGION    = 'eu-west-1'          
+        S3_BUCKET            = 'terraform-state-bucket-00'  
+        INVENTORY_FILE_PATH  = 'petclinic-infra/ansible/inventory.ini' 
     }
     stages {
         stage('Checkout Code') {
@@ -14,6 +17,42 @@ pipeline {
                 git branch: 'debug', url: 'https://github.com/SixCosti/petclinic-automation.git'
             }
         }
+
+        // stage('Install Dependencies') {
+        //     steps {
+        //         dir('spring-petclinic-angular') {
+        //             sh '''
+        //             sudo yum install -y chromium
+
+        //             export CHROME_BIN=/usr/bin/chromium-browser
+
+        //             npm cache clean --force
+        //             rm -rf node_modules package-lock.json
+
+        //             npm install --legacy-peer-deps
+        //             '''
+        //         }
+        //     }
+        // }
+
+        // stage('Frontend Tests') {
+        //     steps {
+        //         dir('spring-petclinic-angular') {
+        //             sh '''
+        //             export CHROME_BIN=/usr/bin/chromium-browser
+        //             ng test --watch=false --browsers=ChromeHeadless
+        //             '''
+        //         }
+        //     }
+        // }
+
+        // stage('Backend Tests') {
+        //     steps {
+        //         dir('spring-petclinic-rest') {
+        //             sh './mvnw test'
+        //         }
+        //     }
+        // }
 
         stage('Download Inventory from S3') {
             steps {
@@ -54,9 +93,7 @@ pipeline {
             steps {
                 dir('petclinic-infra') {
                     script {
-                        // Initialize Terraform to use the S3 bucket as the backend
                         sh 'terraform init' 
-                        // Run Terraform apply
                         sh 'terraform apply -auto-approve'
                     }
                 }
@@ -66,13 +103,13 @@ pipeline {
         stage('Ansible Configuration') {
             steps {
                 script {
-                    dir('petclinic-infra/ansible') {  // Change to the correct directory
+                    dir('petclinic-infra/ansible') {  
                         // Disable host key checking using ANSIBLE_SSH_ARGS
                         withEnv(['ANSIBLE_SSH_ARGS=-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null']) {
                             ansiblePlaybook(
-                                playbook: 'main.yaml',  // Now the relative path is from 'petclinic-infra/ansible'
-                                inventory: 'inventory.ini',  // Same for the inventory
-                                extraVars: [ansible_verbosity: '-v']  // Add verbosity if needed
+                                playbook: 'main.yaml',  
+                                inventory: 'inventory.ini',  
+                                extraVars: [ansible_verbosity: '-v']  
                             )
                     }
                 }
@@ -83,7 +120,7 @@ pipeline {
         stage('Upload Inventory to S3') {
             steps {
                 script {
-                    // After Terraform and Ansible run, upload the updated inventory.ini to S3
+                    // Upload the updated inventory.ini back to S3
                     sh "aws s3 cp ${INVENTORY_FILE_PATH} s3://${S3_BUCKET}/inventory.ini"
                 }
             }
@@ -92,7 +129,7 @@ pipeline {
 
     post {
         always {
-            cleanWs()  // Clean workspace after build
+            cleanWs()
         }
         success {
             echo 'Pipeline execution was successful!'
