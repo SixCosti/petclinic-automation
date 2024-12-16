@@ -1,15 +1,16 @@
 pipeline {
     agent any
-    // tools {
-    //     nodejs 'NodeJS 18'  // Use of NodeJS 18 tool configured in Jenkins
-    // }
+    tools {
+        nodejs 'NodeJS 18'  // Use of NodeJS 18 tool configured in Jenkins
+    }
     environment {
         // Set AWS credentials for Terraform to use S3 bucket
         AWS_ACCESS_KEY_ID     = credentials('aws')  
         AWS_SECRET_ACCESS_KEY = credentials('aws')  
         AWS_DEFAULT_REGION    = 'eu-west-1'          
         S3_BUCKET            = 'terraform-state-bucket-00'  
-        INVENTORY_FILE_PATH  = 'petclinic-infra/ansible/inventory.ini' 
+        INVENTORY_FILE_PATH  = 'petclinic-infra/ansible/inventory.ini'
+        DOCKERHUB_CREDENTIALS = credentials('docker-credentials') 
     }
     stages {
         stage('Checkout Code') {
@@ -18,41 +19,69 @@ pipeline {
             }
         }
 
-        // stage('Install Dependencies') {
-        //     steps {
-        //         dir('spring-petclinic-angular') {
-        //             sh '''
-        //             sudo yum install -y chromium
+        stage('Install Dependencies') {
+            steps {
+                dir('spring-petclinic-angular') {
+                    sh '''
+                    sudo yum install -y chromium
 
-        //             export CHROME_BIN=/usr/bin/chromium-browser
+                    export CHROME_BIN=/usr/bin/chromium-browser
 
-        //             npm cache clean --force
-        //             rm -rf node_modules package-lock.json
+                    npm cache clean --force
+                    rm -rf node_modules package-lock.json
 
-        //             npm install --legacy-peer-deps
-        //             '''
-        //         }
-        //     }
-        // }
+                    npm install --legacy-peer-deps
+                    '''
+                }
+            }
+        }
 
-        // stage('Frontend Tests') {
-        //     steps {
-        //         dir('spring-petclinic-angular') {
-        //             sh '''
-        //             export CHROME_BIN=/usr/bin/chromium-browser
-        //             ng test --watch=false --browsers=ChromeHeadless
-        //             '''
-        //         }
-        //     }
-        // }
+        stage('Frontend Tests') {
+            steps {
+                dir('spring-petclinic-angular') {
+                    sh '''
+                    export CHROME_BIN=/usr/bin/chromium-browser
+                    ng test --watch=false --browsers=ChromeHeadless
+                    '''
+                }
+            }
+        }
 
-        // stage('Backend Tests') {
-        //     steps {
-        //         dir('spring-petclinic-rest') {
-        //             sh './mvnw test'
-        //         }
-        //     }
-        // }
+        stage('Backend Tests') {
+            steps {
+                dir('spring-petclinic-rest') {
+                    sh './mvnw test'
+                }
+            }
+        }
+
+        stage('Build and Push Frontend Image') {
+            steps {
+                dir('spring-petclinic-angular') {
+                    withCredentials([usernamePassword(credentialsId: 'docker-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh '''
+                        docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+                        docker build -t costi0/pet-clinic-frontend:latest .
+                        docker push costi0/pet-clinic-frontend:latest
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Build and Push Backend Image') {
+            steps {
+                dir('spring-petclinic-rest') {
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh '''
+                        docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+                        docker build -t costi0/pet-clinic-backend:latest .
+                        docker push costi0/pet-clinic-backend:latest
+                        '''
+                    }
+                }
+            }
+        }        
 
         stage('Download Inventory from S3') {
             steps {
