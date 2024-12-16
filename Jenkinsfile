@@ -171,6 +171,8 @@ pipeline {
             sh """
                 sudo docker run --rm -v /tmp/zap-reports:/zap/wrk:rw \
                 zaproxy/zap-stable zap-baseline.py \
+                zaproxy/zap-stable pwd \
+                zaproxy/zap-stable ls -l /zap/wrk \
                 -t ${frontendURL} -r /zap/wrk/zap_frontend_report.html
             """
 
