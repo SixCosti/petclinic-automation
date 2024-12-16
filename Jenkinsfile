@@ -184,7 +184,7 @@ stage('Security Scan with OWASP ZAP') {
     post {
         always {
             echo 'OWASP ZAP Scan completed.'
-        // }
+        }
         // success {
         //     echo 'OWASP ZAP Scan completed successfully.'
         // }
