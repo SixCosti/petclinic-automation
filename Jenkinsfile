@@ -171,26 +171,26 @@ stage('Security Scan with OWASP ZAP') {
             sh """
                 sudo docker run --rm -v /tmp/zap-reports:/zap/wrk:rw \
                 zaproxy/zap-stable zap-baseline.py \
-                -t ${frontendURL} || { echo 'ZAP scan failed for frontend'; exit 1; }
+                -t ${frontendURL}
             """
 
             sh """
                 sudo docker run --rm -v /tmp/zap-reports:/zap/wrk:rw \
                 zaproxy/zap-stable zap-baseline.py \
-                -t ${backendURL} || { echo 'ZAP scan failed for backend'; exit 1; }
+                -t ${backendURL}
             """
         }
     }
     post {
         always {
             echo 'OWASP ZAP Scan completed.'
-        }
-        success {
-            echo 'OWASP ZAP Scan completed successfully.'
-        }
-        failure {
-            echo 'OWASP ZAP Scan failed. Check the logs for details.'
-        }
+        // }
+        // success {
+        //     echo 'OWASP ZAP Scan completed successfully.'
+        // }
+        // failure {
+        //     echo 'OWASP ZAP Scan failed. Check the logs for details.'
+        // }
             }
         }
 
