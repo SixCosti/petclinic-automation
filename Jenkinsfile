@@ -168,14 +168,14 @@ pipeline {
                     // Run OWASP ZAP for the Frontend
                     sh """
                         docker run --rm -v \$(pwd):/zap/wrk:rw \
-                        owasp/zap2docker-stable zap-baseline.py \
+                        zaproxy/zap-stable zap-baseline.py \
                         -t ${frontendURL} -r zap_frontend_report.html
                     """
 
                     // Run OWASP ZAP for the Backend
                     sh """
                         docker run --rm -v \$(pwd):/zap/wrk:rw \
-                        owasp/zap2docker-stable zap-baseline.py \
+                        zaproxy/zap-stable zap-baseline.py \
                         -t ${backendURL} -r zap_backend_report.html
                     """
                 }
