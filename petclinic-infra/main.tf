@@ -1,4 +1,15 @@
+terraform {
+  backend "s3" {
+    bucket         = "terraform-state-bucket-00"
+    key            = "terraform-tfstate/terraform.tfstate"
+    region         = "eu-west-1"
+    encrypt        = true
+  }
+}
+
 provider "aws" {
+  access_key = var.aws_access_key
+  secret_key = var.aws_secret_key
   region = "eu-west-1"
 }
 
@@ -84,7 +95,7 @@ resource "aws_security_group" "petclinic_sg" {
     from_port   = 0
     to_port     = 65535  # All TCP ports
     protocol    = "tcp"
-    cidr_blocks = ["my_ip"]
+    cidr_blocks = [var.my_ip]
   }
 
   egress {
