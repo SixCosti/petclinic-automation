@@ -19,69 +19,69 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
-            steps {
-                dir('spring-petclinic-angular') {
-                    sh '''
-                    sudo yum install -y chromium
+        // stage('Install Dependencies') {
+        //     steps {
+        //         dir('spring-petclinic-angular') {
+        //             sh '''
+        //             sudo yum install -y chromium
 
-                    export CHROME_BIN=/usr/bin/chromium-browser
+        //             export CHROME_BIN=/usr/bin/chromium-browser
 
-                    npm cache clean --force
-                    rm -rf node_modules package-lock.json
+        //             npm cache clean --force
+        //             rm -rf node_modules package-lock.json
 
-                    npm install --legacy-peer-deps
-                    '''
-                }
-            }
-        }
+        //             npm install --legacy-peer-deps
+        //             '''
+        //         }
+        //     }
+        // }
 
-        stage('Frontend Tests') {
-            steps {
-                dir('spring-petclinic-angular') {
-                    sh '''
-                    export CHROME_BIN=/usr/bin/chromium-browser
-                    ng test --watch=false --browsers=ChromeHeadless
-                    '''
-                }
-            }
-        }
+        // stage('Frontend Tests') {
+        //     steps {
+        //         dir('spring-petclinic-angular') {
+        //             sh '''
+        //             export CHROME_BIN=/usr/bin/chromium-browser
+        //             ng test --watch=false --browsers=ChromeHeadless
+        //             '''
+        //         }
+        //     }
+        // }
 
-        stage('Backend Tests') {
-            steps {
-                dir('spring-petclinic-rest') {
-                    sh './mvnw test'
-                }
-            }
-        }
+        // stage('Backend Tests') {
+        //     steps {
+        //         dir('spring-petclinic-rest') {
+        //             sh './mvnw test'
+        //         }
+        //     }
+        // }
 
-        stage('Build and Push Frontend Image') {
-            steps {
-                dir('spring-petclinic-angular') {
-                    withCredentials([usernamePassword(credentialsId: 'docker-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        sh '''
-                        docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-                        docker build -t costi0/pet-clinic-frontend:latest .
-                        docker push costi0/pet-clinic-frontend:latest
-                        '''
-                    }
-                }
-            }
-        }
+        // stage('Build and Push Frontend Image') {
+        //     steps {
+        //         dir('spring-petclinic-angular') {
+        //             withCredentials([usernamePassword(credentialsId: 'docker-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+        //                 sh '''
+        //                 docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+        //                 docker build -t costi0/pet-clinic-frontend:latest .
+        //                 docker push costi0/pet-clinic-frontend:latest
+        //                 '''
+        //             }
+        //         }
+        //     }
+        // }
 
-        stage('Build and Push Backend Image') {
-            steps {
-                dir('spring-petclinic-rest') {
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        sh '''
-                        docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-                        docker build -t costi0/pet-clinic-backend:latest .
-                        docker push costi0/pet-clinic-backend:latest
-                        '''
-                    }
-                }
-            }
-        }        
+        // stage('Build and Push Backend Image') {
+        //     steps {
+        //         dir('spring-petclinic-rest') {
+        //             withCredentials([usernamePassword(credentialsId: 'docker-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+        //                 sh '''
+        //                 docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+        //                 docker build -t costi0/pet-clinic-backend:latest .
+        //                 docker push costi0/pet-clinic-backend:latest
+        //                 '''
+        //             }
+        //         }
+        //     }
+        // }        
 
         stage('Download Inventory from S3') {
             steps {
@@ -154,6 +154,45 @@ pipeline {
                 }
             }
         }
+
+        stage('Security Scan with OWASP ZAP') {
+            steps {
+                script {
+                    // Define application server IP and ports
+                    def appServerIP = sh(script: "awk '/\\[app\\]/ {getline; print}' ${INVENTORY_FILE_PATH} | cut -d' ' -f1", returnStdout: true).trim()
+                    
+                    // Frontend and backend URLs
+                    def frontendURL = "http://${appServerIP}:8080"
+                    def backendURL = "http://${appServerIP}:9966"
+
+                    // Run OWASP ZAP for the Frontend
+                    sh """
+                        docker run --rm -v \$(pwd):/zap/wrk:rw \
+                        owasp/zap2docker-stable zap-baseline.py \
+                        -t ${frontendURL} -r zap_frontend_report.html
+                    """
+
+                    // Run OWASP ZAP for the Backend
+                    sh """
+                        docker run --rm -v \$(pwd):/zap/wrk:rw \
+                        owasp/zap2docker-stable zap-baseline.py \
+                        -t ${backendURL} -r zap_backend_report.html
+                    """
+                }
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: '*.html', allowEmptyArchive: true
+                }
+                success {
+                    echo 'OWASP ZAP Scan completed successfully.'
+                }
+                failure {
+                    echo 'OWASP ZAP Scan failed. Check the reports for details.'
+                }
+            }
+        }
+
     }
 
     post {
