@@ -158,12 +158,15 @@ pipeline {
         stage('Security Scan with OWASP ZAP') {
             steps {
                 script {
-                    // Define application server IP and ports
                     def appServerIP = sh(script: "awk '/\\[app\\]/ {getline; print}' ${INVENTORY_FILE_PATH} | cut -d' ' -f1", returnStdout: true).trim()
-                    
-                    // Frontend and backend URLs
+
                     def frontendURL = "http://${appServerIP}:8080"
                     def backendURL = "http://${appServerIP}:9966"
+
+                    // Adjust the permissions of the workspace to allow Docker to write to it
+                    sh """
+                        sudo chmod -R 777 \$(pwd)  # Grant read/write/execute permissions for everyone
+                    """
 
                     // Run OWASP ZAP for the Frontend
                     sh """
