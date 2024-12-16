@@ -94,57 +94,57 @@ pipeline {
             }
         }
 
-        stage('Setup PEM Key') {
-            steps {
-                withCredentials([file(credentialsId: 'test-pem-key', variable: 'PEM_FILE')]) {
-                    sh '''
-                    sudo mkdir -p ~/.ssh
-                    sudo cp $PEM_FILE ~/.ssh/test.pem
-                    sudo chmod 400 ~/.ssh/test.pem
-                    echo "PEM key has been copied and permissions set."
-                    '''
-                }
-            }
-        }
+    //     stage('Setup PEM Key') {
+    //         steps {
+    //             withCredentials([file(credentialsId: 'test-pem-key', variable: 'PEM_FILE')]) {
+    //                 sh '''
+    //                 sudo mkdir -p ~/.ssh
+    //                 sudo cp $PEM_FILE ~/.ssh/test.pem
+    //                 sudo chmod 400 ~/.ssh/test.pem
+    //                 echo "PEM key has been copied and permissions set."
+    //                 '''
+    //             }
+    //         }
+    //     }
 
-        stage('Copy terraform.tfvars from Secret File') {
-            steps {
-                withCredentials([file(credentialsId: 'tfvars', variable: 'TFVARS_FILE')]) {
-                    sh '''
-                    cp $TFVARS_FILE petclinic-infra/terraform.tfvars
-                    echo 'Copied terraform.tfvars to petclinic-infra folder.'
-                    '''
-                }
-            }
-        }
+    //     stage('Copy terraform.tfvars from Secret File') {
+    //         steps {
+    //             withCredentials([file(credentialsId: 'tfvars', variable: 'TFVARS_FILE')]) {
+    //                 sh '''
+    //                 cp $TFVARS_FILE petclinic-infra/terraform.tfvars
+    //                 echo 'Copied terraform.tfvars to petclinic-infra folder.'
+    //                 '''
+    //             }
+    //         }
+    //     }
 
-        stage('Terraform Init & Apply') {
-            steps {
-                dir('petclinic-infra') {
-                    script {
-                        sh 'terraform init' 
-                        sh 'terraform apply -auto-approve'
-                    }
-                }
-            }
-        }
+    //     stage('Terraform Init & Apply') {
+    //         steps {
+    //             dir('petclinic-infra') {
+    //                 script {
+    //                     sh 'terraform init' 
+    //                     sh 'terraform apply -auto-approve'
+    //                 }
+    //             }
+    //         }
+    //     }
 
-        stage('Ansible Configuration') {
-            steps {
-                script {
-                    dir('petclinic-infra/ansible') {  
-                        // Disable host key checking using ANSIBLE_SSH_ARGS
-                        withEnv(['ANSIBLE_SSH_ARGS=-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null']) {
-                            ansiblePlaybook(
-                                playbook: 'main.yaml',  
-                                inventory: 'inventory.ini',  
-                                extraVars: [ansible_verbosity: '-v']  
-                            )
-                    }
-                }
-            }
-        }
-    }
+    //     stage('Ansible Configuration') {
+    //         steps {
+    //             script {
+    //                 dir('petclinic-infra/ansible') {  
+    //                     // Disable host key checking using ANSIBLE_SSH_ARGS
+    //                     withEnv(['ANSIBLE_SSH_ARGS=-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null']) {
+    //                         ansiblePlaybook(
+    //                             playbook: 'main.yaml',  
+    //                             inventory: 'inventory.ini',  
+    //                             extraVars: [ansible_verbosity: '-v']  
+    //                         )
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 
         stage('Upload Inventory to S3') {
             steps {
@@ -163,24 +163,26 @@ pipeline {
                     def frontendURL = "http://${appServerIP}:8080"
                     def backendURL = "http://${appServerIP}:9966"
 
-                    // Adjust the permissions of the workspace to allow Docker to write to it
                     sh """
-                        sudo chmod -R 777 \$(pwd)  # Grant read/write/execute permissions for everyone
+                        sudo mkdir -p /tmp/zap-reports
+                        sudo chmod -R 777 /tmp/zap-reports
                     """
 
                     // Run OWASP ZAP for the Frontend
                     sh """
-                        sudo docker run --rm -v \$(pwd):/zap/wrk:rw \
+                        sudo docker run --rm -v /tmp/zap-reports:/zap/wrk:rw \
                         zaproxy/zap-stable zap-baseline.py \
-                        -t ${frontendURL} -r zap_frontend_report.html
+                        -t ${frontendURL} -r /zap/wrk/zap_frontend_report.html
                     """
 
                     // Run OWASP ZAP for the Backend
                     sh """
-                        sudo docker run --rm -v \$(pwd):/zap/wrk:rw \
+                        sudo docker run --rm -v /tmp/zap-reports:/zap/wrk:rw \
                         zaproxy/zap-stable zap-baseline.py \
-                        -t ${backendURL} -r zap_backend_report.html
+                        -t ${backendURL} -r /zap/wrk/zap_backend_report.html
                     """
+
+                    sh 'cp /tmp/zap-reports/* .'
                 }
             }
             post {
