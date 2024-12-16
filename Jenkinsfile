@@ -157,32 +157,34 @@ pipeline {
 
         stage('Security Scan with OWASP ZAP') {
             steps {
-                script {
-                    def appServerIP = sh(script: "awk '/\\[app\\]/ {getline; print}' ${INVENTORY_FILE_PATH} | cut -d' ' -f1", returnStdout: true).trim()
+        script {
+            def appServerIP = sh(script: "awk '/\\[app\\]/ {getline; print}' ${INVENTORY_FILE_PATH} | cut -d' ' -f1", returnStdout: true).trim()
 
-                    def frontendURL = "http://${appServerIP}:8080"
-                    def backendURL = "http://${appServerIP}:9966"
+            def frontendURL = "http://${appServerIP}:8080"
+            def backendURL = "http://${appServerIP}:9966"
 
-                    sh """
-                        sudo mkdir -p /tmp/zap-reports
-                        sudo chmod -R 777 /tmp/zap-reports
-                    """
+            sh """
+                sudo mkdir -p /tmp/zap-reports
+                sudo chmod -R 777 /tmp/zap-reports
+            """
 
-                    // Run OWASP ZAP for the Frontend
-                    sh """
-                        sudo docker run --rm -v /tmp/zap-reports:/zap/wrk:rw \
-                        zaproxy/zap-stable zap-baseline.py \
-                        -t ${frontendURL} -r /zap/wrk/zap_frontend_report.html
-                    """
+            sh """
+                sudo docker run --rm -v /tmp/zap-reports:/zap/wrk:rw \
+                zaproxy/zap-stable zap-baseline.py \
+                -t ${frontendURL} -r /zap/wrk/zap_frontend_report.html
+            """
 
-                    // Run OWASP ZAP for the Backend
-                    sh """
-                        sudo docker run --rm -v /tmp/zap-reports:/zap/wrk:rw \
-                        zaproxy/zap-stable zap-baseline.py \
-                        -t ${backendURL} -r /zap/wrk/zap_backend_report.html
-                    """
+            sh """
+                sudo docker run --rm -v /tmp/zap-reports:/zap/wrk:rw \
+                zaproxy/zap-stable zap-baseline.py \
+                -t ${backendURL} -r /zap/wrk/zap_backend_report.html
+            """
 
-                    sh 'cp /tmp/zap-reports/* .'
+            // Check the contents of the mounted directory
+            sh 'ls -l /tmp/zap-reports'
+            sh 'ls -l $(pwd)'  // Check the Jenkins workspace
+
+            sh 'cp /tmp/zap-reports/* .'
                 }
             }
             post {
