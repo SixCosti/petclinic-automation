@@ -163,21 +163,21 @@ stage('Security Scan with OWASP ZAP') {
             def frontendURL = "http://${appServerIP}:8080"
             def backendURL = "http://${appServerIP}:9966"
 
+            // sh """
+            //     sudo mkdir -p /tmp/zap-reports
+            //     sudo chmod -R 777 /tmp/zap-reports
+            // """
+
             sh """
-                sudo mkdir -p /tmp/zap-reports
-                sudo chmod -R 777 /tmp/zap-reports
+                sudo docker run --rm -v /tmp/zap-reports:/zap/wrk:rw \
+                zaproxy/zap-stable zap-baseline.py \
+                -t ${frontendURL} || { echo 'ZAP scan failed for frontend'; exit 1; }
             """
 
             sh """
                 sudo docker run --rm -v /tmp/zap-reports:/zap/wrk:rw \
                 zaproxy/zap-stable zap-baseline.py \
-                -t ${frontendURL}
-            """
-
-            sh """
-                sudo docker run --rm -v /tmp/zap-reports:/zap/wrk:rw \
-                zaproxy/zap-stable zap-baseline.py \
-                -t ${backendURL}
+                -t ${backendURL} || { echo 'ZAP scan failed for backend'; exit 1; }
             """
         }
     }
