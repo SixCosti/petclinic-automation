@@ -166,25 +166,24 @@ pipeline {
             sh """
                 sudo mkdir -p /tmp/zap-reports
                 sudo chmod -R 777 /tmp/zap-reports
+                sudo rm -rf /tmp/zap-reports/*
             """
 
             sh """
                 sudo docker run --rm -v /tmp/zap-reports:/zap/wrk:rw \
                 zaproxy/zap-stable zap-baseline.py \
-                zaproxy/zap-stable pwd \
-                zaproxy/zap-stable ls -l /zap/wrk \
-                -t ${frontendURL} -r /zap/wrk/zap_frontend_report.html
+                -t ${frontendURL} -r zap_frontend_report.html
             """
 
             sh """
                 sudo docker run --rm -v /tmp/zap-reports:/zap/wrk:rw \
                 zaproxy/zap-stable zap-baseline.py \
-                -t ${backendURL} -r /zap/wrk/zap_backend_report.html
+                -t ${backendURL} -r zap_backend_report.html
             """
 
             // Check the contents of the mounted directory
             sh 'ls -l /tmp/zap-reports'
-            sh 'ls -l $(pwd)'  // Check the Jenkins workspace
+            sh 'ls -l $(pwd)'
 
             sh 'cp /tmp/zap-reports/* .'
                 }
