@@ -89,6 +89,7 @@ pipeline {
                     // Check if the inventory.ini exists in S3 and download it
                     sh """
                         aws s3 cp s3://${S3_BUCKET}/inventory.ini ${INVENTORY_FILE_PATH} || echo "No inventory.ini found, will create one."
+                        cat petclinic-infra/ansible/inventory.ini
                     """
                 }
             }
@@ -134,6 +135,7 @@ pipeline {
                 script {
                     // Upload the updated inventory.ini back to S3
                     sh "aws s3 cp ${INVENTORY_FILE_PATH} s3://${S3_BUCKET}/inventory.ini"
+                    sh "cat petclinic-infra/ansible/inventory.ini"
                 }
             }
         }
