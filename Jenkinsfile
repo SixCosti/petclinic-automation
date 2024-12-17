@@ -129,6 +129,15 @@ pipeline {
             }
         }
 
+        stage('Upload Inventory to S3') {
+            steps {
+                script {
+                    // Upload the updated inventory.ini back to S3
+                    sh "aws s3 cp ${INVENTORY_FILE_PATH} s3://${S3_BUCKET}/inventory.ini"
+                }
+            }
+        }
+
         stage('Ansible Configuration') {
             steps {
                 script {
@@ -145,15 +154,6 @@ pipeline {
             }
         }
     }
-
-        stage('Upload Inventory to S3') {
-            steps {
-                script {
-                    // Upload the updated inventory.ini back to S3
-                    sh "aws s3 cp ${INVENTORY_FILE_PATH} s3://${S3_BUCKET}/inventory.ini"
-                }
-            }
-        }
 
 stage('Security Scan with OWASP ZAP') {
     steps {
