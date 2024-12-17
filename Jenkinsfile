@@ -163,24 +163,25 @@ stage('Security Scan with OWASP ZAP') {
             def frontendURL = "http://${appServerIP}:8080"
             def backendURL = "http://${appServerIP}:9966"
 
-            // sh """
-            //     sudo mkdir -p /tmp/zap-reports
-            //     sudo chmod -R 777 /tmp/zap-reports
-            // """
-
-            sh """
+            def frontendExitCode = sh(script: """
                 sudo docker run --rm -v /tmp/zap-reports:/zap/wrk:rw \
-                zaproxy/zap-stable zap-baseline.py \
-                -t ${frontendURL} || true
-            """
+                zaproxy/zap-stable zap-baseline.py -t ${frontendURL} || echo \$?
+            """, returnStdout: true).trim()
 
-            sh """
+            def backendExitCode = sh(script: """
                 sudo docker run --rm -v /tmp/zap-reports:/zap/wrk:rw \
-                zaproxy/zap-stable zap-baseline.py \
-                -t ${backendURL} || true
-            """
+                zaproxy/zap-stable zap-baseline.py -t ${backendURL} || echo \$?
+            """, returnStdout: true).trim()
+
+            if (frontendExitCode == '2' || backendExitCode == '2') {
+                echo "Scan completed with warnings, but pipeline will continue."
+            } else if (frontendExitCode != '0' || backendExitCode != '0') {
+                error "One of the scans failed. Check the logs for details."
+            }
         }
     }
+}    
+    
     post {
         always {
             echo 'OWASP ZAP Scan completed.'
