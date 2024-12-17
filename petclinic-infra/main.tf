@@ -131,7 +131,7 @@ resource "aws_security_group_rule" "db_access_from_ec2" {
   from_port   = 3306
   to_port     = 3306
   protocol    = "tcp"
-  cidr_blocks = [aws_instance.pet_clinic.private_ip]  # EC2 instance's private IP
+  cidr_blocks = ["${aws_instance.pet_clinic.private_ip}/32"]  # EC2 instance's private IP
 
   security_group_id = aws_security_group.petclinic_sg.id
 
