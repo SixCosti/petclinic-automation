@@ -46,7 +46,7 @@
     - name: Apply deployment.yaml using kubectl
       shell: |
         export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-        sed -i "s|\${DB_HOST}|{{ db_host }}|g" /home/admin/deployment.yaml
+        sed -i '/- name: DB_HOST/{n;s/value: ".*"/value: "{{ db_host }}"/}' /home/admin/deployment.yaml
         kubectl apply -f /home/admin/deployment.yaml
       args:
         executable: /bin/bash
