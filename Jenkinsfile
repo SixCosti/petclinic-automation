@@ -90,6 +90,7 @@ pipeline {
                     sh """
                         aws s3 cp s3://${S3_BUCKET}/inventory.ini ${INVENTORY_FILE_PATH} || echo "No inventory.ini found, will create one."
                         cat petclinic-infra/ansible/inventory.ini
+                        sudo chmod 777 petclinic-infra/ansible/inventory.ini
                     """
                 }
             }
