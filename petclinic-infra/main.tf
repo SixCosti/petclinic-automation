@@ -27,6 +27,7 @@ resource "null_resource" "inventory_update" {
     EOT
 
   }
+  depends_on = [aws_db_instance.petclinic_db]
 }
 
 
@@ -53,8 +54,8 @@ resource "aws_instance" "pet_clinic" {
   EOF
 
   vpc_security_group_ids = [aws_security_group.petclinic_sg.id]
-  
-  depends_on = [aws_db_instance.petclinic_db, null_resource.inventory_update]
+
+  depends_on = [aws_db_instance.petclinic_db]
 
 
   provisioner "file" {
