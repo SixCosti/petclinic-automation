@@ -13,6 +13,24 @@ provider "aws" {
   region = "eu-west-1"
 }
 
+resource "null_resource" "inventory_update" {
+  triggers = {
+    always_run = "${timestamp()}"
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      echo "[app]" > ansible/inventory.ini
+      echo "${aws_instance.pet_clinic.public_ip} ansible_ssh_user=admin ansible_ssh_private_key_file=~/.ssh/${var.key_name}.pem" >> ansible/inventory.ini
+      echo "[db]" >> ansible/inventory.ini
+      echo "${aws_db_instance.petclinic_db.address}" >> ansible/inventory.ini
+    EOT
+
+  }
+}
+
+
+
 resource "aws_instance" "pet_clinic" {
   ami           = "ami-0715d656023fe21b4"
   instance_type = "t2.medium"
@@ -35,18 +53,9 @@ resource "aws_instance" "pet_clinic" {
   EOF
 
   vpc_security_group_ids = [aws_security_group.petclinic_sg.id]
+  
+  depends_on = [aws_db_instance.petclinic_db, null_resource.inventory_update]
 
-
-  provisioner "local-exec" {
-    command = <<EOT
-    echo "[app]" > ansible/inventory.ini
-    echo "${aws_instance.pet_clinic.public_ip} ansible_ssh_user=admin ansible_ssh_private_key_file=~/.ssh/${var.key_name}.pem" >> ansible/inventory.ini
-    echo "[db]" >> ansible/inventory.ini
-    echo "${aws_db_instance.petclinic_db.address}" >> ansible/inventory.ini
-    EOT
-  }
-
-  depends_on = [aws_db_instance.petclinic_db]
 
   provisioner "file" {
     source      = "kubernetes/deployment.yaml"
