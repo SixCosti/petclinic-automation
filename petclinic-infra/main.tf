@@ -88,7 +88,7 @@ resource "aws_security_group" "petclinic_sg" {
     from_port        = 3306
     to_port          = 3306
     protocol         = "tcp"
-    security_groups  = [aws_security_group.petclinic_sg.id]
+    cidr_blocks = [aws_instance.pet_clinic.private_ip]
   }
 
   ingress {
