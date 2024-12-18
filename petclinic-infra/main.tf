@@ -13,6 +13,25 @@ provider "aws" {
   region = "eu-west-1"
 }
 
+resource "null_resource" "inventory_update" {
+  triggers = {
+    always_run = "${timestamp()}"
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      echo "[app]" > ansible/inventory.ini
+      echo "${aws_instance.pet_clinic.public_ip} ansible_ssh_user=admin ansible_ssh_private_key_file=~/.ssh/${var.key_name}.pem" >> ansible/inventory.ini
+      echo "[db]" >> ansible/inventory.ini
+      echo "${aws_db_instance.petclinic_db.address}" >> ansible/inventory.ini
+    EOT
+
+  }
+  depends_on = [aws_db_instance.petclinic_db]
+}
+
+
+
 resource "aws_instance" "pet_clinic" {
   ami           = "ami-0715d656023fe21b4"
   instance_type = "t2.medium"
@@ -36,17 +55,8 @@ resource "aws_instance" "pet_clinic" {
 
   vpc_security_group_ids = [aws_security_group.petclinic_sg.id]
 
-
-  provisioner "local-exec" {
-    command = <<EOT
-    echo "[app]" > ansible/inventory.ini
-    echo "${aws_instance.pet_clinic.public_ip} ansible_ssh_user=admin ansible_ssh_private_key_file=~/.ssh/${var.key_name}.pem" >> ansible/inventory.ini
-    echo "[db]" >> ansible/inventory.ini
-    echo "${aws_db_instance.petclinic_db.address}" >> ansible/inventory.ini
-    EOT
-  }
-
   depends_on = [aws_db_instance.petclinic_db]
+
 
   provisioner "file" {
     source      = "kubernetes/deployment.yaml"
@@ -67,14 +77,14 @@ resource "aws_security_group" "petclinic_sg" {
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [var.my_ip]
   }
 
   ingress {
     from_port   = 9966
     to_port     = 9966
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [var.my_ip]
   }
 
   ingress {
@@ -91,12 +101,12 @@ resource "aws_security_group" "petclinic_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  ingress {
-    from_port   = 0
-    to_port     = 65535  # All TCP ports
-    protocol    = "tcp"
-    cidr_blocks = [var.my_ip]
-  }
+  # ingress {
+  #   from_port   = 0
+  #   to_port     = 65535  # All TCP ports
+  #   protocol    = "tcp"
+  #   cidr_blocks = [var.my_ip]
+  # }
 
   egress {
     from_port   = 0
@@ -124,3 +134,16 @@ resource "aws_db_instance" "petclinic_db" {
     Name = "PetClinicRDS"
   }
 }
+
+
+# resource "aws_security_group_rule" "db_access_from_ec2" {
+#   type        = "ingress"
+#   from_port   = 3306
+#   to_port     = 3306
+#   protocol    = "tcp"
+#   cidr_blocks = ["${aws_instance.pet_clinic.private_ip}/32"] 
+
+#   security_group_id = aws_security_group.petclinic_sg.id
+
+#   depends_on = [aws_instance.pet_clinic]  # Ensure EC2 instance is created first
+# }
