@@ -163,26 +163,49 @@ stage('Security Scan with OWASP ZAP') {
         script {
             def appServerIP = sh(script: "awk '/\\[app\\]/ {getline; print}' ${INVENTORY_FILE_PATH} | cut -d' ' -f1", returnStdout: true).trim()
 
-            def frontendURL = "http://${appServerIP}:8080"
-            def backendURL = "http://${appServerIP}:9966"
+            def frontendURL = "http://${appServerIP}:8080/petclinic"
+            def backendURL = "http://${appServerIP}:9966/petclinic"
+
+            def frontendOutput = sh(script: """
+                sudo docker run --rm -v /tmp/zap-reports:/zap/wrk:rw \
+                zaproxy/zap-stable zap-baseline.py -t ${frontendURL}
+            """, returnStdout: true).trim()
+
+            def backendOutput = sh(script: """
+                sudo docker run --rm -v /tmp/zap-reports:/zap/wrk:rw \
+                zaproxy/zap-stable zap-baseline.py -t ${backendURL}
+            """, returnStdout: true).trim()
+
+            echo "Frontend scan output:\n${frontendOutput}"
+            echo "Backend scan output:\n${backendOutput}"
 
             def frontendExitCode = sh(script: """
                 sudo docker run --rm -v /tmp/zap-reports:/zap/wrk:rw \
-                zaproxy/zap-stable zap-baseline.py -t ${frontendURL} || echo \$?
-            """, returnStdout: true).trim()
+                zaproxy/zap-stable zap-baseline.py -t ${frontendURL}
+            """, returnStatus: true)
 
             def backendExitCode = sh(script: """
                 sudo docker run --rm -v /tmp/zap-reports:/zap/wrk:rw \
-                zaproxy/zap-stable zap-baseline.py -t ${backendURL} || echo \$?
-            """, returnStdout: true).trim()
+                zaproxy/zap-stable zap-baseline.py -t ${backendURL}
+            """, returnStatus: true)
 
-            if (frontendExitCode == '2' || backendExitCode == '2') {
-                echo "Scan completed with warnings, but pipeline will continue."
-            } else if (frontendExitCode != '0' || backendExitCode != '0') {
+            echo "Frontend scan exit code: ${frontendExitCode}"
+            echo "Backend scan exit code: ${backendExitCode}"
+
+            if (frontendExitCode == 2) {
+                echo "Frontend scan completed with warnings, treating as success."
+                frontendExitCode = 0
+            }
+            if (backendExitCode == 2) {
+                echo "Backend scan completed with warnings, treating as success."
+                backendExitCode = 0
+            }
+
+            if (frontendExitCode != 0 || backendExitCode != 0) {
                 error "One of the scans failed. Check the logs for details."
             }
         }
-    }    
+    }
     
     post {
         always {
