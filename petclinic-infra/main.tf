@@ -36,6 +36,8 @@ resource "aws_instance" "pet_clinic" {
   ami           = "ami-0715d656023fe21b4"
   instance_type = "t2.medium"
   key_name      = var.key_name
+  monitoring    = false # Ensures basic monitoring is enabled
+
   tags = {
     Name = "PetClinicServer"
   }
@@ -67,6 +69,34 @@ resource "aws_instance" "pet_clinic" {
       private_key = file("~/.ssh/${var.key_name}.pem")
       host        = self.public_ip
     }
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "ec2_cpu_high" {
+  alarm_name          = "HighCPUUtilization"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 80
+  dimensions = {
+    InstanceId = aws_instance.pet_clinic.id
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "rds_free_storage" {
+  alarm_name          = "LowRDSFreeStorage"
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "FreeStorageSpace"
+  namespace           = "AWS/RDS"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 500000000 # 500 MB
+  dimensions = {
+    DBInstanceIdentifier = aws_db_instance.petclinic_db.id
   }
 }
 
@@ -141,9 +171,9 @@ resource "aws_db_instance" "petclinic_db" {
 #   from_port   = 3306
 #   to_port     = 3306
 #   protocol    = "tcp"
-#   cidr_blocks = ["${aws_instance.pet_clinic.private_ip}/32"] 
+#   cidr_blocks = ["${aws_instance.pet_clinic.private_ip}/32"]
 
 #   security_group_id = aws_security_group.petclinic_sg.id
 
-#   depends_on = [aws_instance.pet_clinic]  # Ensure EC2 instance is created first
+#   depends_on = [aws_instance.pet_clinic]
 # }
