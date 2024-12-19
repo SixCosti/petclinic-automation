@@ -16,6 +16,7 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 git branch: 'debug', url: 'https://github.com/SixCosti/petclinic-automation.git'
+                // git branch: 'main', url: 'https://github.com/SixCosti/petclinic-automation.git'
             }
         }
 
@@ -89,6 +90,8 @@ pipeline {
                     // Check if the inventory.ini exists in S3 and download it
                     sh """
                         aws s3 cp s3://${S3_BUCKET}/inventory.ini ${INVENTORY_FILE_PATH} || echo "No inventory.ini found, will create one."
+                        cat petclinic-infra/ansible/inventory.ini
+                        sudo chmod 777 petclinic-infra/ansible/inventory.ini
                     """
                 }
             }
@@ -129,6 +132,16 @@ pipeline {
             }
         }
 
+        stage('Upload Inventory to S3') {
+            steps {
+                script {
+                    // Upload the updated inventory.ini back to S3
+                    sh "aws s3 cp ${INVENTORY_FILE_PATH} s3://${S3_BUCKET}/inventory.ini"
+                    sh "cat petclinic-infra/ansible/inventory.ini"
+                }
+            }
+        }
+
         stage('Ansible Configuration') {
             steps {
                 script {
@@ -146,41 +159,44 @@ pipeline {
         }
     }
 
-        stage('Upload Inventory to S3') {
-            steps {
-                script {
-                    // Upload the updated inventory.ini back to S3
-                    sh "aws s3 cp ${INVENTORY_FILE_PATH} s3://${S3_BUCKET}/inventory.ini"
-                }
-            }
-        }
-
 stage('Security Scan with OWASP ZAP') {
     steps {
         script {
             def appServerIP = sh(script: "awk '/\\[app\\]/ {getline; print}' ${INVENTORY_FILE_PATH} | cut -d' ' -f1", returnStdout: true).trim()
 
-            def frontendURL = "http://${appServerIP}:8080"
-            def backendURL = "http://${appServerIP}:9966"
+            def frontendURL = "http://${appServerIP}:8080/petclinic"
+            def backendURL = "http://${appServerIP}:9966/petclinic"
 
-            // sh """
-            //     sudo mkdir -p /tmp/zap-reports
-            //     sudo chmod -R 777 /tmp/zap-reports
-            // """
-
-            sh """
+            def frontendExitCode = sh(script: """
                 sudo docker run --rm -v /tmp/zap-reports:/zap/wrk:rw \
-                zaproxy/zap-stable zap-baseline.py \
-                -t ${frontendURL} || true
-            """
+                zaproxy/zap-stable zap-baseline.py -t ${frontendURL}
+            """, returnStatus: true)
 
-            sh """
+            def backendExitCode = sh(script: """
                 sudo docker run --rm -v /tmp/zap-reports:/zap/wrk:rw \
-                zaproxy/zap-stable zap-baseline.py \
-                -t ${backendURL} || true
-            """
+                zaproxy/zap-stable zap-baseline.py -t ${backendURL}
+            """, returnStatus: true)
+
+            echo "Frontend scan output:\n${frontendExitCode}"
+            echo "Backend scan output:\n${backendExitCode}"
+
+            if (frontendExitCode == 2) {
+                frontendExitCode = 0
+            }
+            if (backendExitCode == 2) {
+                backendExitCode = 0
+            }
+
+            echo "Frontend scan exit code: ${frontendExitCode}"
+            echo "Backend scan exit code: ${backendExitCode}"
+
+            // Fail the pipeline if either scan failed (non-zero exit code except '2')
+            if (frontendExitCode != 0 || backendExitCode != 0) {
+                error "One of the scans failed. Check the logs for details."
+            }
         }
     }
+    
     post {
         always {
             echo 'OWASP ZAP Scan completed.'
