@@ -13,10 +13,31 @@ provider "aws" {
   region = "eu-west-1"
 }
 
+resource "null_resource" "inventory_update" {
+  triggers = {
+    always_run = "${timestamp()}"
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      echo "[app]" > ansible/inventory.ini
+      echo "${aws_instance.pet_clinic.public_ip} ansible_ssh_user=admin ansible_ssh_private_key_file=~/.ssh/${var.key_name}.pem" >> ansible/inventory.ini
+      echo "[db]" >> ansible/inventory.ini
+      echo "${aws_db_instance.petclinic_db.address}" >> ansible/inventory.ini
+    EOT
+
+  }
+  depends_on = [aws_db_instance.petclinic_db]
+}
+
+
+
 resource "aws_instance" "pet_clinic" {
   ami           = "ami-0715d656023fe21b4"
   instance_type = "t2.medium"
   key_name      = var.key_name
+  monitoring    = false # Ensures basic monitoring is enabled
+
   tags = {
     Name = "PetClinicServer"
   }
@@ -36,17 +57,8 @@ resource "aws_instance" "pet_clinic" {
 
   vpc_security_group_ids = [aws_security_group.petclinic_sg.id]
 
-
-  provisioner "local-exec" {
-    command = <<EOT
-    echo "[app]" > ansible/inventory.ini
-    echo "${aws_instance.pet_clinic.public_ip} ansible_ssh_user=admin ansible_ssh_private_key_file=~/.ssh/${var.key_name}.pem" >> ansible/inventory.ini
-    echo "[db]" >> ansible/inventory.ini
-    echo "${aws_db_instance.petclinic_db.address}" >> ansible/inventory.ini
-    EOT
-  }
-
   depends_on = [aws_db_instance.petclinic_db]
+
 
   provisioner "file" {
     source      = "kubernetes/deployment.yaml"
@@ -60,6 +72,34 @@ resource "aws_instance" "pet_clinic" {
   }
 }
 
+resource "aws_cloudwatch_metric_alarm" "ec2_cpu_high" {
+  alarm_name          = "HighCPUUtilization"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 80
+  dimensions = {
+    InstanceId = aws_instance.pet_clinic.id
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "rds_free_storage" {
+  alarm_name          = "LowRDSFreeStorage"
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "FreeStorageSpace"
+  namespace           = "AWS/RDS"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 500000000 # 500 MB
+  dimensions = {
+    DBInstanceIdentifier = aws_db_instance.petclinic_db.id
+  }
+}
+
 resource "aws_security_group" "petclinic_sg" {
   name = "PetClinicSG"
 
@@ -67,14 +107,14 @@ resource "aws_security_group" "petclinic_sg" {
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [var.my_ip]
   }
 
   ingress {
     from_port   = 9966
     to_port     = 9966
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [var.my_ip]
   }
 
   ingress {
@@ -91,12 +131,12 @@ resource "aws_security_group" "petclinic_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  ingress {
-    from_port   = 0
-    to_port     = 65535  # All TCP ports
-    protocol    = "tcp"
-    cidr_blocks = [var.my_ip]
-  }
+  # ingress {
+  #   from_port   = 0
+  #   to_port     = 65535  # All TCP ports
+  #   protocol    = "tcp"
+  #   cidr_blocks = [var.my_ip]
+  # }
 
   egress {
     from_port   = 0
@@ -124,3 +164,16 @@ resource "aws_db_instance" "petclinic_db" {
     Name = "PetClinicRDS"
   }
 }
+
+
+# resource "aws_security_group_rule" "db_access_from_ec2" {
+#   type        = "ingress"
+#   from_port   = 3306
+#   to_port     = 3306
+#   protocol    = "tcp"
+#   cidr_blocks = ["${aws_instance.pet_clinic.private_ip}/32"]
+
+#   security_group_id = aws_security_group.petclinic_sg.id
+
+#   depends_on = [aws_instance.pet_clinic]
+# }
