@@ -223,7 +223,7 @@ stage('Security Scan with OWASP ZAP') {
 
     post {
         always {
-            cleanWs()
+            // cleanWs()
         }
         success {
             echo 'Pipeline execution was successful!'
