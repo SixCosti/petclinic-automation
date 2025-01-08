@@ -15,7 +15,7 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: 'debug', url: 'https://github.com/SixCosti/petclinic-automation.git'
+                git branch: 'temp', url: 'https://github.com/SixCosti/petclinic-automation.git'
                 // git branch: 'main', url: 'https://github.com/SixCosti/petclinic-automation.git'
             }
         }
@@ -24,14 +24,7 @@ pipeline {
             steps {
                 dir('spring-petclinic-angular') {
                     sh '''
-                    sudo yum install -y chromium
-
-                    export CHROME_BIN=/usr/bin/chromium-browser
-
-                    npm cache clean --force
-                    rm -rf node_modules package-lock.json
-
-                    npm install --legacy-peer-deps
+                    npm ci --legacy-peer-deps
                     '''
                 }
             }
@@ -40,10 +33,16 @@ pipeline {
         stage('Frontend Tests') {
             steps {
                 dir('spring-petclinic-angular') {
-                    sh '''
-                    export CHROME_BIN=/usr/bin/chromium-browser
-                    ng test --watch=false --browsers=ChromeHeadless
-                    '''
+                    script {
+                        docker.image('cypress/base:12.19.0') // Docker image with Node.js and Chromium
+                            .inside('-v ${WORKSPACE}/spring-petclinic-angular:/workspace') {
+                                sh '''
+                                cd /workspace
+                                export CHROME_BIN=/usr/bin/chromium-browser
+                                npm ci
+                                ng test --watch=false --browsers=ChromeHeadless
+                                '''
+                            }
                 }
             }
         }
