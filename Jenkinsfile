@@ -24,7 +24,10 @@ pipeline {
             steps {
                 dir('spring-petclinic-angular') {
                     sh '''
-                    npm ci --legacy-peer-deps
+                    export CHROME_BIN=/usr/bin/chromium-browser
+
+                    npm config set cache ~/.npm
+                    npm ci --prefer-offline --legacy-peer-deps
                     '''
                 }
             }
@@ -50,35 +53,42 @@ pipeline {
         stage('Backend Tests') {
             steps {
                 dir('spring-petclinic-rest') {
-                    sh './mvnw test'
+                    sh '''
+                    mkdir -p ~/.m2/repository
+                    ./mvnw test -Dmaven.repo.local=~/.m2/repository
+                    '''
                 }
             }
         }
 
         stage('Build and Push Frontend Image') {
+            when {
+                expression {
+                    sh(script: "git diff --quiet HEAD^ HEAD -- spring-petclinic-angular", returnStatus: true) != 0
+                }
+            }
             steps {
                 dir('spring-petclinic-angular') {
-                    withCredentials([usernamePassword(credentialsId: 'docker-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        sh '''
-                        docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-                        docker build -t costi0/pet-clinic-frontend:latest .
-                        docker push costi0/pet-clinic-frontend:latest
-                        '''
-                    }
+                    sh '''
+                    docker build -t costi0/pet-clinic-frontend:latest .
+                    docker push costi0/pet-clinic-frontend:latest
+                    '''
                 }
             }
         }
 
         stage('Build and Push Backend Image') {
+            when {
+                expression {
+                    sh(script: "git diff --quiet HEAD^ HEAD -- spring-petclinic-rest", returnStatus: true) != 0
+                }
+            }
             steps {
                 dir('spring-petclinic-rest') {
-                    withCredentials([usernamePassword(credentialsId: 'docker-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        sh '''
-                        docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-                        docker build -t costi0/pet-clinic-backend:latest .
-                        docker push costi0/pet-clinic-backend:latest
-                        '''
-                    }
+                    sh '''
+                    docker build -t costi0/pet-clinic-backend:latest .
+                    docker push costi0/pet-clinic-backend:latest
+                    '''
                 }
             }
         }        
