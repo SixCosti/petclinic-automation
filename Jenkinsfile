@@ -24,10 +24,14 @@ pipeline {
             steps {
                 dir('spring-petclinic-angular') {
                     sh '''
+                    sudo yum install -y chromium
+
                     export CHROME_BIN=/usr/bin/chromium-browser
 
-                    npm config set cache ~/.npm
-                    npm ci --prefer-offline --legacy-peer-deps
+                    npm cache clean --force
+                    rm -rf node_modules package-lock.json
+
+                    npm install --legacy-peer-deps
                     '''
                 }
             }
@@ -36,16 +40,10 @@ pipeline {
         stage('Frontend Tests') {
             steps {
                 dir('spring-petclinic-angular') {
-                    script {
-                        docker.image('cypress/base:12.19.0') // Docker image with Node.js and Chromium
-                            .inside('-v ${WORKSPACE}/spring-petclinic-angular:/workspace') {
-                                sh '''
-                                cd /workspace
-                                export CHROME_BIN=/usr/bin/chromium-browser
-                                npm ci
-                                ng test --watch=false --browsers=ChromeHeadless
-                                '''
-                            }
+                    sh '''
+                    export CHROME_BIN=/usr/bin/chromium-browser
+                    ng test --watch=false --browsers=ChromeHeadless
+                    '''
                 }
             }
         }
@@ -53,42 +51,35 @@ pipeline {
         stage('Backend Tests') {
             steps {
                 dir('spring-petclinic-rest') {
-                    sh '''
-                    mkdir -p ~/.m2/repository
-                    ./mvnw test -Dmaven.repo.local=~/.m2/repository
-                    '''
+                    sh './mvnw test'
                 }
             }
         }
 
         stage('Build and Push Frontend Image') {
-            when {
-                expression {
-                    sh(script: "git diff --quiet HEAD^ HEAD -- spring-petclinic-angular", returnStatus: true) != 0
-                }
-            }
             steps {
                 dir('spring-petclinic-angular') {
-                    sh '''
-                    docker build -t costi0/pet-clinic-frontend:latest .
-                    docker push costi0/pet-clinic-frontend:latest
-                    '''
+                    withCredentials([usernamePassword(credentialsId: 'docker-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh '''
+                        docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+                        docker build -t costi0/pet-clinic-frontend:latest .
+                        docker push costi0/pet-clinic-frontend:latest
+                        '''
+                    }
                 }
             }
         }
 
         stage('Build and Push Backend Image') {
-            when {
-                expression {
-                    sh(script: "git diff --quiet HEAD^ HEAD -- spring-petclinic-rest", returnStatus: true) != 0
-                }
-            }
             steps {
                 dir('spring-petclinic-rest') {
-                    sh '''
-                    docker build -t costi0/pet-clinic-backend:latest .
-                    docker push costi0/pet-clinic-backend:latest
-                    '''
+                    withCredentials([usernamePassword(credentialsId: 'docker-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh '''
+                        docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+                        docker build -t costi0/pet-clinic-backend:latest .
+                        docker push costi0/pet-clinic-backend:latest
+                        '''
+                    }
                 }
             }
         }        
@@ -223,7 +214,7 @@ stage('Security Scan with OWASP ZAP') {
 
     post {
         always {
-            // cleanWs()
+            cleanWs()
         }
         success {
             echo 'Pipeline execution was successful!'
@@ -232,5 +223,4 @@ stage('Security Scan with OWASP ZAP') {
             echo 'Pipeline failed, please check the logs for errors.'
         }
     }
-}
 }
