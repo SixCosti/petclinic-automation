@@ -4,10 +4,10 @@ pipeline {
         nodejs 'NodeJS 18'  // Use of NodeJS 18 tool configured in Jenkins
     }
     environment {
-        // Set AWS credentials the S3 bucket
-        // AWS_ACCESS_KEY_ID     = credentials('aws')  
-        // AWS_SECRET_ACCESS_KEY = credentials('aws')  
-        // AWS_DEFAULT_REGION    = 'eu-west-1'          
+        Set AWS credentials the S3 bucket
+        AWS_ACCESS_KEY_ID     = credentials('aws')  
+        AWS_SECRET_ACCESS_KEY = credentials('aws')  
+        AWS_DEFAULT_REGION    = 'eu-west-1'          
         S3_BUCKET            = 'terraform-state-bucket-00'  
         INVENTORY_FILE_PATH  = 'petclinic-infra/ansible/inventory.ini'
         DOCKERHUB_CREDENTIALS = credentials('docker-credentials') 
