@@ -4,7 +4,7 @@ pipeline {
         nodejs 'NodeJS 18'  // Use of NodeJS 18 tool configured in Jenkins
     }
     environment {
-        Set AWS credentials the S3 bucket
+        // Set AWS credentials the S3 bucket
         AWS_ACCESS_KEY_ID     = credentials('aws')  
         AWS_SECRET_ACCESS_KEY = credentials('aws')  
         AWS_DEFAULT_REGION    = 'eu-west-1'          
