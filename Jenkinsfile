@@ -5,9 +5,9 @@ pipeline {
     }
     environment {
         // Set AWS credentials the S3 bucket
-        AWS_ACCESS_KEY_ID     = credentials('aws')  
-        AWS_SECRET_ACCESS_KEY = credentials('aws')  
-        AWS_DEFAULT_REGION    = 'eu-west-1'          
+        // AWS_ACCESS_KEY_ID     = credentials('aws')  
+        // AWS_SECRET_ACCESS_KEY = credentials('aws')  
+        // AWS_DEFAULT_REGION    = 'eu-west-1'          
         S3_BUCKET            = 'terraform-state-bucket-00'  
         INVENTORY_FILE_PATH  = 'petclinic-infra/ansible/inventory.ini'
         DOCKERHUB_CREDENTIALS = credentials('docker-credentials') 
@@ -116,7 +116,6 @@ pipeline {
                     sh '''
                     cp $TFVARS_FILE petclinic-infra/terraform.tfvars
                     echo 'Copied terraform.tfvars to petclinic-infra folder.'
-                    cat petclinic-infra/terraform.tfvars
                     '''
                 }
             }
