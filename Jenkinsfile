@@ -4,7 +4,7 @@ pipeline {
         nodejs 'NodeJS 18'  // Use of NodeJS 18 tool configured in Jenkins
     }
     environment {
-        // Set AWS credentials for Terraform to use S3 bucket
+        // Set AWS credentials the S3 bucket
         AWS_ACCESS_KEY_ID     = credentials('aws')  
         AWS_SECRET_ACCESS_KEY = credentials('aws')  
         AWS_DEFAULT_REGION    = 'eu-west-1'          
@@ -116,6 +116,7 @@ pipeline {
                     sh '''
                     cp $TFVARS_FILE petclinic-infra/terraform.tfvars
                     echo 'Copied terraform.tfvars to petclinic-infra folder.'
+                    cat petclinic-infra/terraform.tfvars
                     '''
                 }
             }
@@ -125,6 +126,7 @@ pipeline {
             steps {
                 dir('petclinic-infra') {
                     script {
+                        sh 'export TF_LOG=DEBUG'
                         sh 'terraform init' 
                         sh 'terraform apply -auto-approve'
                     }
