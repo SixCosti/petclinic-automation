@@ -15,8 +15,8 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: 'debug', url: 'https://github.com/SixCosti/petclinic-automation.git'
-                // git branch: 'main', url: 'https://github.com/SixCosti/petclinic-automation.git'
+                // git branch: 'debug', url: 'https://github.com/SixCosti/petclinic-automation.git'
+                git branch: 'main', url: 'https://github.com/SixCosti/petclinic-automation.git'
             }
         }
 

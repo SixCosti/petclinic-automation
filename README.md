@@ -21,7 +21,7 @@ Furthermore, when adding a pet entry to an Owner, besides of the usual mandatory
 *Known Limitations*
 
 At the moment, the `Breed` functions in a similar way as `Type of Pet`, it can be created individually and the entries can be selected from the list when adding a `Pet` entity to an `Owner` entry.
-As an example, if an Owner has a pet type `dog`, when selecting the breed, it will display teh entire collection in the list, that means that `cat` breeds and other breeds can be selected as well.
+As an example, if an Owner has a pet type `dog`, when selecting the breed, it will display the entire collection in the list, that means that `cat` breeds and other breeds can be selected as well.
 
 A great enhancement to ensure a more user-friendly approach and to minimise possible errors and discomfort would be making the "Breed" feature depend on what `Type of Pet` is being selected.
 For example if selecting a `dog` type of pet, then the `breed` dropdown list will only show related entries and not all of the available breeds at once.
