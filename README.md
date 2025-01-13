@@ -2,7 +2,7 @@
 
 ## End User
 
-This is the source code for the internal Pet Clinic management System Website, it contains both the Development and the Deployment configurations.
+This is the source code for the internal Pet Clinic management System Website, it contains both the Development and the Deployment configurations. 
 
 *What's New*
 
