@@ -41,7 +41,7 @@ pipeline {
             steps {
                 dir('spring-petclinic-angular') {
                     sh '''
-                    export CHROME_BIN=/usr/bin/chromium-browser
+                    export CHROME_BIN=/usr/bin/chromium
                     ng test --watch=false --browsers=ChromeHeadless
                     '''
                 }
