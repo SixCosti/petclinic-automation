@@ -26,7 +26,7 @@ pipeline {
                     sh '''
                     sudo apt install -y chromium
 
-                    export CHROME_BIN=/usr/bin/chromium-browser
+                    export CHROME_BIN=/usr/bin/chromium
 
                     npm cache clean --force
                     rm -rf node_modules package-lock.json
