@@ -24,7 +24,7 @@ pipeline {
             steps {
                 dir('spring-petclinic-angular') {
                     sh '''
-                    sudo yum install -y chromium
+                    sudo apt install -y chromium
 
                     export CHROME_BIN=/usr/bin/chromium-browser
 
